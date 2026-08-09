@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>The Vinyl · 黑胶唱片架</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260809-13">
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="selection-theme" aria-hidden="true"></div>
+  <div class="grain"></div>
+
+  <section id="mini-player" class="mini-player" aria-label="Spotify 当前播放" aria-live="polite">
+    <div class="mini-player__art" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>
+    </div>
+    <div class="mini-player__copy">
+      <strong id="player-track">Connect Spotify</strong>
+      <span id="player-artist">同步当前播放</span>
+    </div>
+    <div class="mini-player__controls">
+      <button id="player-previous" type="button" aria-label="上一首" disabled>
+        <svg viewBox="0 0 24 24"><path d="M6 5v14M18 6l-9 6 9 6V6z"/></svg>
+      </button>
+      <button id="player-toggle" class="mini-player__toggle" type="button" aria-label="播放" aria-pressed="false" disabled>
+        <svg class="player-icon player-icon--play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7V5z"/></svg>
+        <svg class="player-icon player-icon--pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>
+      </button>
+      <button id="player-next" type="button" aria-label="下一首" disabled>
+        <svg viewBox="0 0 24 24"><path d="M18 5v14M6 6l9 6-9 6V6z"/></svg>
+      </button>
+      <button id="player-lyrics-toggle" class="mini-player__lyrics-toggle" type="button" aria-label="打开歌词" aria-pressed="false" disabled>
+        <svg class="lyrics-toggle-icon lyrics-toggle-icon--lyrics" viewBox="0 0 24 24"><path d="M5 7h14M5 12h10M5 17h7"/></svg>
+        <svg class="lyrics-toggle-icon lyrics-toggle-icon--close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="mini-player__progress" aria-hidden="true"><span id="player-progress"></span></div>
+  </section>
+
+  <div class="utility-bar">
+    <button class="icon-button sound-toggle" aria-pressed="false" aria-label="切换音效">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 9v6h4l5 4V5L8 9H4z"/>
+        <path class="sound-wave" d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/>
+      </svg>
+    </button>
+
+    <div class="spotify-controls">
+      <button id="spotify-auth" class="icon-button spotify-auth" aria-label="Connect Spotify">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.3 14.45c-.17.28-.5.37-.78.2-2.18-1.33-4.93-1.63-8.16-.89-.32.08-.64-.12-.72-.44-.08-.32.12-.64.44-.72 3.56-.82 6.63-.47 9.09 1.02.28.17.37.5.2.78zm1.12-2.5c-.21.35-.68.47-1.03.26-2.5-1.52-6.32-1.97-9.28-1.08-.38.12-.79-.1-.91-.48-.12-.38.1-.79.48-.91 3.36-1.02 7.57-.52 10.44 1.23.35.21.47.68.26 1.03zm.03-2.63c-2.97-1.76-7.9-1.93-10.85-1.07-.44.13-.9-.12-1.03-.56-.13-.44.12-.9.56-1.03 3.42-1 8.85-.8 12.28 1.24.39.23.52.73.29 1.12-.23.38-.72.51-1.12.28z"/>
+        </svg>
+        <span class="spotify-auth__label">CONNECT SPOTIFY</span>
+      </button>
+      <button id="spotify-logout" class="icon-button spotify-logout" aria-label="断开 Spotify" hidden>
+        <svg viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="experience">
+    <div class="shelf" tabindex="0">
+      <div class="shelf__glow"></div>
+      <div class="shelf__shadow"></div>
+      <div id="album-stage" class="shelf__stage"></div>
+
+      <button class="nav-button nav-button--previous" aria-label="上一张">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="nav-button nav-button--next" aria-label="下一张">
+        <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div id="now-playing-record" class="now-playing-record" aria-hidden="true"></div>
+
+    <div class="album-info">
+      <p id="album-artist"></p>
+      <h1 id="album-title"></h1>
+    </div>
+
+    <aside id="album-detail" class="album-detail" aria-hidden="true">
+      <button id="album-detail-close" class="album-detail__close" type="button" aria-label="关闭专辑详情">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="album-detail__header">
+        <p class="album-detail__eyebrow">Selected album</p>
+        <h2 id="detail-artist"></h2>
+        <p id="detail-track" class="album-detail__track"></p>
+        <p id="detail-title" class="album-detail__title"></p>
+        <p id="detail-meta" class="album-detail__meta"></p>
+      </div>
+      <div class="album-detail__content">
+        <ol id="album-tracklist" class="tracklist" role="tabpanel"></ol>
+        <section id="lyrics-panel" class="lyrics-panel" role="tabpanel" aria-hidden="true">
+          <div id="lyrics-scroll" class="lyrics-scroll">
+            <div id="lyrics-lines" class="lyrics-lines">
+              <p class="lyrics-message">播放歌曲后，可以在这里查看同步歌词。</p>
+            </div>
+          </div>
+          <button id="lyrics-resume" class="lyrics-resume" type="button" hidden>回到当前歌词</button>
+          <div class="lyrics-footer">
+            <p id="lyrics-source">Lyrics</p>
+            <button id="lyrics-translation-toggle" type="button" aria-pressed="true" hidden>中文译文</button>
+          </div>
+        </section>
+      </div>
+      <p id="detail-copyright" class="album-detail__copyright" hidden></p>
+    </aside>
+  </main>
+
+  <div class="cursor" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  </div>
+
+  <div id="notice" class="notice"></div>
+
+  <script src="spotify.js?v=20260809-13"></script>
+  <script src="lyrics.js?v=20260809-13"></script>
+  <script src="app.js?v=20260809-13"></script>
+</body>
+</html>
