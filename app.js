@@ -66,8 +66,12 @@ const lyricsResume = document.querySelector("#lyrics-resume");
 const lyricsSource = document.querySelector("#lyrics-source");
 const lyricsTranslationToggle = document.querySelector("#lyrics-translation-toggle");
 
+function isCompactLayout() {
+  return window.innerWidth < 760;
+}
+
 let activeIndex = null;
-let shelfCenter = Math.min(albums.length - 1, window.innerWidth < 760 ? 3 : 2);
+let shelfCenter = Math.min(albums.length - 1, isCompactLayout() ? 3 : 2);
 let previewIndex = Math.round(shelfCenter);
 let dragStartAxis = 0;
 let dragStartCenter = 0;
@@ -778,7 +782,7 @@ function renderAlbums() {
 }
 
 function getSpacing() {
-  if (window.innerWidth < 760) return Math.min(88, Math.max(70, window.innerHeight * .085));
+  if (isCompactLayout()) return Math.min(82, Math.max(62, window.innerHeight * .08));
   return Math.min(180, Math.max(140, window.innerWidth * .11));
 }
 
@@ -786,16 +790,16 @@ function getFlowPose(distance, compact) {
   const absDistance = Math.abs(distance);
   if (compact) {
     const spacing = getSpacing();
-    const side = distance === 0 ? 1 : Math.sign(distance);
     return {
       x: 0,
       y: distance * spacing,
       z: 52 - Math.min(absDistance * 22, 130),
-      rotateX: side * (78 + Math.min(absDistance * 3.5, 12)),
+      // 手机端所有封套保持同一倾斜方向，越过中心时不再整张翻面。
+      rotateX: 76 + Math.min(absDistance * 2.2, 10),
       rotateY: 0,
-      rotateZ: distance * -.12,
-      scale: 1 - Math.min(absDistance * .018, .085),
-      visible: absDistance < 5.7,
+      rotateZ: distance * -.08,
+      scale: 1 - Math.min(absDistance * .016, .075),
+      visible: absDistance < 5.2,
     };
   }
   // 接近参考图的书本陈列角度：书脊完整可读，同时保留一段封面。
@@ -834,7 +838,7 @@ function updatePreviewInfo(index, animate = true) {
 
 function updateLayout(immediate = false) {
   const elements = [...stage.querySelectorAll(".album")];
-  const compact = window.innerWidth < 760;
+  const compact = isCompactLayout();
   const focus = activeIndex ?? shelfCenter;
 
   elements.forEach((element, index) => {
@@ -843,13 +847,13 @@ function updateLayout(immediate = false) {
     const pose = getFlowPose(distance, compact);
 
     if (isActive) {
-      pose.x = compact ? -42 : -Math.min(300, window.innerWidth * .21);
-      pose.y = compact ? -115 : 18;
-      pose.z = compact ? 240 : 300;
+      pose.x = compact ? -Math.min(34, window.innerWidth * .085) : -Math.min(300, window.innerWidth * .21);
+      pose.y = compact ? -Math.min(112, window.innerHeight * .15) : 18;
+      pose.z = compact ? 230 : 300;
       pose.rotateX = 0;
       pose.rotateY = 0;
       pose.rotateZ = compact ? -.45 : -.38;
-      pose.scale = compact ? .78 : .82;
+      pose.scale = compact ? .82 : .82;
       pose.visible = true;
     } else if (activeIndex !== null) {
       pose.z -= compact ? 100 : 140;
@@ -952,7 +956,7 @@ function setCollection(nextAlbums) {
   nowPlayingRecord.setAttribute("aria-hidden", "true");
   albums = nextAlbums;
   activeIndex = null;
-  shelfCenter = Math.min(albums.length - 1, window.innerWidth < 760 ? 3 : 2);
+  shelfCenter = Math.min(albums.length - 1, isCompactLayout() ? 3 : 2);
   previewIndex = -1;
   document.body.classList.remove("has-selection", "now-playing-lyrics", "closing-now-playing-lyrics");
   closeAlbumDetail();
@@ -1238,7 +1242,7 @@ spotifyLogout.addEventListener("click", () => {
 
 shelf.addEventListener("pointerdown", (event) => {
   if (event.button !== 0 || event.target.closest(".nav-button, .icon-button")) return;
-  const compact = window.innerWidth < 760;
+  const compact = isCompactLayout();
   dragStartAxis = compact ? event.clientY : event.clientX;
   dragStartCenter = shelfCenter;
   lastDragAxis = dragStartAxis;
@@ -1255,7 +1259,7 @@ shelf.addEventListener("pointermove", (event) => {
   cursor.style.left = `${event.clientX}px`;
   cursor.style.top = `${event.clientY}px`;
   if (!shelf.hasPointerCapture(event.pointerId) || activeIndex !== null) return;
-  const currentAxis = window.innerWidth < 760 ? event.clientY : event.clientX;
+  const currentAxis = isCompactLayout() ? event.clientY : event.clientX;
   const delta = currentAxis - dragStartAxis;
   const now = performance.now();
   const elapsed = Math.max(1, now - lastDragTime);
@@ -1263,7 +1267,7 @@ shelf.addEventListener("pointermove", (event) => {
   dragVelocity = dragVelocity * .7 + instantVelocity * .3;
   lastDragAxis = currentAxis;
   lastDragTime = now;
-  if (Math.abs(delta) > 4) didDrag = true;
+  if (Math.abs(delta) > (isCompactLayout() ? 8 : 4)) didDrag = true;
   shelfCenter = Math.max(-.28, Math.min(albums.length - .72, dragStartCenter - delta / getSpacing()));
   updateLayout();
 });
@@ -1278,7 +1282,7 @@ function endDrag(event) {
     didDrag = true;
     selectAlbum(tappedIndex);
   } else if (activeIndex === null) {
-    const projectedCenter = shelfCenter + dragVelocity * 155;
+    const projectedCenter = shelfCenter + dragVelocity * (isCompactLayout() ? 72 : 155);
     shelfCenter = Math.round(Math.max(0, Math.min(albums.length - 1, projectedCenter)));
     updateLayout();
   }
@@ -1310,8 +1314,8 @@ shelf.addEventListener("wheel", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") browse(-1);
   if (event.key === "ArrowRight") browse(1);
-  if (window.innerWidth < 760 && event.key === "ArrowUp") browse(-1);
-  if (window.innerWidth < 760 && event.key === "ArrowDown") browse(1);
+  if (isCompactLayout() && event.key === "ArrowUp") browse(-1);
+  if (isCompactLayout() && event.key === "ArrowDown") browse(1);
   if (event.key === "Escape" && document.body.classList.contains("now-playing-lyrics")) {
     closeNowPlayingLyrics();
   } else if (event.key === "Escape" && activeIndex !== null) {
