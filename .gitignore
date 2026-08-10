@@ -3,3 +3,6 @@
 .vercel/
 __pycache__/
 *.py[cod]
+.env
+.env.*
+*.p8

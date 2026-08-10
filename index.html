@@ -8,20 +8,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260809-14">
+  <link rel="stylesheet" href="styles.css?v=20260810-15">
 </head>
 <body>
   <div class="ambient"></div>
   <div class="selection-theme" aria-hidden="true"></div>
   <div class="grain"></div>
 
-  <section id="mini-player" class="mini-player" aria-label="Spotify 当前播放" aria-live="polite">
+  <section id="mini-player" class="mini-player" aria-label="当前播放" aria-live="polite">
     <div class="mini-player__art" aria-hidden="true">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>
     </div>
     <div class="mini-player__copy">
-      <strong id="player-track">Connect Spotify</strong>
-      <span id="player-artist">同步当前播放</span>
+      <strong id="player-track">Connect music</strong>
+      <span id="player-artist">选择你的音乐平台</span>
     </div>
     <div class="mini-player__controls">
       <button id="player-previous" type="button" aria-label="上一首" disabled>
@@ -50,20 +50,49 @@
       </svg>
     </button>
 
-    <div class="spotify-controls">
-      <button id="spotify-auth" class="icon-button spotify-auth" aria-label="Connect Spotify">
-        <svg viewBox="0 0 24 24" fill="currentColor">
+    <div class="provider-controls">
+      <button id="provider-auth" class="icon-button provider-auth" type="button" aria-label="选择音乐平台" aria-haspopup="dialog" aria-expanded="false" data-provider="none">
+        <span class="provider-auth__icon provider-auth__icon--chooser" aria-hidden="true"><i></i><i></i><i></i></span>
+        <svg class="provider-icon provider-icon--spotify" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.3 14.45c-.17.28-.5.37-.78.2-2.18-1.33-4.93-1.63-8.16-.89-.32.08-.64-.12-.72-.44-.08-.32.12-.64.44-.72 3.56-.82 6.63-.47 9.09 1.02.28.17.37.5.2.78zm1.12-2.5c-.21.35-.68.47-1.03.26-2.5-1.52-6.32-1.97-9.28-1.08-.38.12-.79-.1-.91-.48-.12-.38.1-.79.48-.91 3.36-1.02 7.57-.52 10.44 1.23.35.21.47.68.26 1.03zm.03-2.63c-2.97-1.76-7.9-1.93-10.85-1.07-.44.13-.9-.12-1.03-.56-.13-.44.12-.9.56-1.03 3.42-1 8.85-.8 12.28 1.24.39.23.52.73.29 1.12-.23.38-.72.51-1.12.28z"/>
         </svg>
-        <span class="spotify-auth__label">CONNECT SPOTIFY</span>
+        <svg class="provider-icon provider-icon--apple" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.7 13.2c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 3 2.3 1.2 0 1.6-.7 3.1-.7 1.4 0 1.9.7 3.1.7 1.3 0 2.1-1.1 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.9-1.1-2.9-3.7zM15.3 6.4c.6-.8 1.1-2 1-3.2-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.5 2.9-1.3z"/></svg>
+        <svg class="provider-icon provider-icon--netease" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.2 6.7c2-2.3 5.6-2.5 7.8-.3 2.4 2.4 1.9 6.4-.7 8.2-2.1 1.5-5.1 1.2-6.8-.6-1.4-1.5-1.6-3.9-.3-5.4 1.1-1.3 3.1-1.5 4.4-.4 1.2 1 1.4 2.9.3 4-.8.8-2.2.8-3 0-.6-.6-.6-1.6-.1-2.2M9.6 6.6C7.2 4.7 3.5 5.5 2.2 8.3c-1.4 3.1.7 6.5 3.9 7 2.6.4 5.1-1.3 5.6-3.7"/></svg>
+        <span class="provider-auth__label">Choose music</span>
       </button>
-      <button id="spotify-logout" class="icon-button spotify-logout" aria-label="断开 Spotify" hidden>
+      <button id="provider-logout" class="icon-button provider-logout" type="button" aria-label="断开音乐平台" hidden>
         <svg viewBox="0 0 24 24">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
         </svg>
       </button>
     </div>
   </div>
+
+  <section id="provider-picker" class="provider-picker" role="dialog" aria-modal="false" aria-labelledby="provider-picker-title" hidden>
+    <div class="provider-picker__heading">
+      <div>
+        <p>Music source</p>
+        <h2 id="provider-picker-title">选择音乐平台</h2>
+      </div>
+      <button id="provider-picker-close" type="button" aria-label="关闭平台选择"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="provider-picker__list">
+      <button class="provider-choice provider-choice--spotify" type="button" data-provider-choice="spotify">
+        <span class="provider-choice__mark"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.3 14.45c-.17.28-.5.37-.78.2-2.18-1.33-4.93-1.63-8.16-.89-.32.08-.64-.12-.72-.44-.08-.32.12-.64.44-.72 3.56-.82 6.63-.47 9.09 1.02.28.17.37.5.2.78zm1.12-2.5c-.21.35-.68.47-1.03.26-2.5-1.52-6.32-1.97-9.28-1.08-.38.12-.79-.1-.91-.48-.12-.38.1-.79.48-.91 3.36-1.02 7.57-.52 10.44 1.23.35.21.47.68.26 1.03zm.03-2.63c-2.97-1.76-7.9-1.93-10.85-1.07-.44.13-.9-.12-1.03-.56-.13-.44.12-.9.56-1.03 3.42-1 8.85-.8 12.28 1.24.39.23.52.73.29 1.12-.23.38-.72.51-1.12.28z"/></svg></span>
+        <span><strong>Spotify</strong><small>收藏专辑与 Spotify Connect</small></span><i>→</i>
+      </button>
+      <button class="provider-choice provider-choice--apple" type="button" data-provider-choice="apple">
+        <span class="provider-choice__mark"><svg viewBox="0 0 24 24"><path d="M17.7 13.2c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 3 2.3 1.2 0 1.6-.7 3.1-.7 1.4 0 1.9.7 3.1.7 1.3 0 2.1-1.1 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.9-1.1-2.9-3.7zM15.3 6.4c.6-.8 1.1-2 1-3.2-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.5 2.9-1.3z"/></svg></span>
+        <span><strong>Apple Music</strong><small>MusicKit · 资料库与网页播放</small></span><i>→</i>
+      </button>
+      <button class="provider-choice provider-choice--netease" type="button" data-provider-choice="netease">
+        <span class="provider-choice__mark"><svg viewBox="0 0 24 24"><path d="M10.2 6.7c2-2.3 5.6-2.5 7.8-.3 2.4 2.4 1.9 6.4-.7 8.2-2.1 1.5-5.1 1.2-6.8-.6-1.4-1.5-1.6-3.9-.3-5.4 1.1-1.3 3.1-1.5 4.4-.4 1.2 1 1.4 2.9.3 4-.8.8-2.2.8-3 0-.6-.6-.6-1.6-.1-2.2M9.6 6.6C7.2 4.7 3.5 5.5 2.2 8.3c-1.4 3.1.7 6.5 3.9 7 2.6.4 5.1-1.3 5.6-3.7"/></svg></span>
+        <span><strong>网易云音乐</strong><small>官方 CLI · 本机桥接播放</small></span><i>→</i>
+      </button>
+    </div>
+    <div id="provider-setup" class="provider-setup" hidden></div>
+    <p class="provider-picker__privacy">一次只连接一个平台。账户令牌不会在平台之间共享。</p>
+  </section>
 
   <main class="experience">
     <div class="shelf" tabindex="0">
@@ -122,8 +151,11 @@
 
   <div id="notice" class="notice"></div>
 
-  <script src="spotify.js?v=20260809-14"></script>
-  <script src="lyrics.js?v=20260809-14"></script>
-  <script src="app.js?v=20260809-14"></script>
+  <script src="spotify.js?v=20260810-15"></script>
+  <script src="apple-music.js?v=20260810-15"></script>
+  <script src="netease-music.js?v=20260810-15"></script>
+  <script src="music-providers.js?v=20260810-15"></script>
+  <script src="lyrics.js?v=20260810-15"></script>
+  <script src="app.js?v=20260810-15"></script>
 </body>
 </html>

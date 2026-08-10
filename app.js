@@ -38,9 +38,12 @@ const cursor = document.querySelector(".cursor");
 const albumArtist = document.querySelector("#album-artist");
 const albumTitle = document.querySelector("#album-title");
 const soundToggle = document.querySelector(".sound-toggle");
-const spotifyButton = document.querySelector("#spotify-auth");
-const spotifyButtonLabel = document.querySelector(".spotify-auth__label");
-const spotifyLogout = document.querySelector("#spotify-logout");
+const providerButton = document.querySelector("#provider-auth");
+const providerButtonLabel = document.querySelector(".provider-auth__label");
+const providerLogout = document.querySelector("#provider-logout");
+const providerPicker = document.querySelector("#provider-picker");
+const providerPickerClose = document.querySelector("#provider-picker-close");
+const providerSetup = document.querySelector("#provider-setup");
 const notice = document.querySelector("#notice");
 const miniPlayer = document.querySelector("#mini-player");
 const playerTrack = document.querySelector("#player-track");
@@ -99,6 +102,7 @@ let nowPlayingLyricsOrigin = null;
 let nowPlayingCleanupTimer = null;
 let nowPlayingVisualKey = "";
 let nowPlayingVisualAlbum = null;
+let pendingProviderId = null;
 
 const spotifyPalettes = [
   ["#193c54", "#f0d998", "#d65f42"],
@@ -391,9 +395,10 @@ function renderAlbumDetail(album, loading = false) {
 
 async function hydrateAlbumDetail(index, requestId) {
   const album = albums[index];
-  if (!album?.id) return;
+  const service = activeMusicService();
+  if (!album?.id || !service?.getAlbum || !isProviderConnected()) return;
   try {
-    const details = await window.spotifyAuth.getAlbum(album.id);
+    const details = await service.getAlbum(album.id);
     if (requestId !== detailRequestId || albums[index] !== album) return;
     album.uri = details.uri || album.uri;
     album.spotifyUrl = details.external_urls?.spotify || album.spotifyUrl;
@@ -547,7 +552,7 @@ async function loadLyricsForPlayback(force = false) {
   const metadata = currentPlaybackMetadata();
   if (!metadata) {
     lyricsRequestedTrackKey = "";
-    renderLyricsMessage("还没有正在播放的歌曲", "请先在 Spotify 播放一首歌。 ");
+    renderLyricsMessage("还没有正在播放的歌曲", `请先在 ${providerName()} 播放一首歌。`);
     return;
   }
   if (!force && (lyricsState?.trackKey === metadata.key || lyricsRequestedTrackKey === metadata.key)) {
@@ -637,7 +642,7 @@ function renderNowPlayingHeader(item) {
     || item.show?.name
     || "Unknown artist";
   detailTrack.textContent = item.name || "Unknown track";
-  detailTitle.textContent = item.album?.name || item.show?.name || "Spotify";
+  detailTitle.textContent = item.album?.name || item.show?.name || providerName();
   detailMeta.textContent = "";
   const copyrightLine = nowPlayingVisualAlbum ? getCopyrightLine(nowPlayingVisualAlbum) : "";
   detailCopyright.textContent = copyrightLine;
@@ -663,7 +668,7 @@ function renderNowPlayingVisual(item, force = false) {
 function openNowPlayingLyrics() {
   const item = playbackState?.item;
   if (!item) {
-    showNotice("请先在 Spotify 播放一首歌。", "info", 3600);
+    showNotice(`请先在 ${providerName()} 播放一首歌。`, "info", 3600);
     return;
   }
   if (!item.album) {
@@ -964,15 +969,42 @@ function setCollection(nextAlbums) {
   updateLayout(true);
 }
 
-function setSpotifyButton(state, profile = null) {
+function activeProviderId() {
+  return window.musicProviders.activeId || pendingProviderId;
+}
+
+function activeProviderMeta() {
+  const id = activeProviderId();
+  return id ? window.musicProviders.metadata[id] : null;
+}
+
+function activeMusicService() {
+  const id = activeProviderId();
+  return id ? window.musicProviders.get(id) : null;
+}
+
+function providerName() {
+  return activeProviderMeta()?.name || "音乐平台";
+}
+
+function isProviderConnected() {
+  return providerButton.classList.contains("is-connected");
+}
+
+function setProviderButton(state, profile = null, providerId = activeProviderId()) {
   const connected = state === "connected";
-  spotifyButton.disabled = state === "loading";
-  spotifyButton.classList.toggle("is-connected", connected);
-  spotifyButton.setAttribute("aria-label", connected ? `Spotify connected${profile?.display_name ? ` as ${profile.display_name}` : ""}` : "Connect Spotify");
-  spotifyLogout.hidden = !connected;
-  if (state === "loading") spotifyButtonLabel.textContent = "Connecting…";
-  else if (connected) spotifyButtonLabel.textContent = (profile?.display_name || "Spotify connected").slice(0, 20);
-  else spotifyButtonLabel.textContent = "Connect Spotify";
+  const meta = providerId ? window.musicProviders.metadata[providerId] : null;
+  providerButton.disabled = state === "loading";
+  providerButton.classList.toggle("is-connected", connected);
+  providerButton.dataset.provider = connected && providerId ? providerId : "none";
+  providerButton.setAttribute("aria-label", connected
+    ? `${meta?.name || "音乐平台"} 已连接${profile?.display_name ? ` · ${profile.display_name}` : ""}`
+    : "选择音乐平台");
+  providerLogout.hidden = !connected;
+  providerLogout.setAttribute("aria-label", `断开 ${meta?.name || "音乐平台"}`);
+  if (state === "loading") providerButtonLabel.textContent = "Connecting…";
+  else if (connected) providerButtonLabel.textContent = (profile?.display_name || `${meta?.name || "Music"} connected`).slice(0, 20);
+  else providerButtonLabel.textContent = "Choose music";
 }
 
 function updatePlaybackProgress() {
@@ -997,19 +1029,19 @@ function renderPlayback(state) {
   if (!playbackState) {
     miniPlayer.classList.remove("has-cover");
     miniPlayer.style.removeProperty("--player-cover");
-    playerTrack.textContent = spotifyButton.classList.contains("is-connected") ? "Nothing playing" : "Connect Spotify";
-    playerArtist.textContent = spotifyButton.classList.contains("is-connected") ? "请先在 Spotify 选择播放设备" : "同步当前播放";
+    playerTrack.textContent = isProviderConnected() ? "Nothing playing" : "Connect music";
+    playerArtist.textContent = isProviderConnected() ? `请先在 ${providerName()} 开始播放` : "选择你的音乐平台";
     playerToggle.setAttribute("aria-pressed", "false");
     playerToggle.setAttribute("aria-label", "播放");
     setPlaybackControlsEnabled(false);
     updatePlaybackProgress();
-    if (detailMode === "lyrics") renderLyricsMessage("还没有正在播放的歌曲", "请先在 Spotify 播放一首歌。");
+    if (detailMode === "lyrics") renderLyricsMessage("还没有正在播放的歌曲", `请先在 ${providerName()} 播放一首歌。`);
     return;
   }
 
   const item = playbackState.item;
   const cover = item.album?.images?.[0]?.url || item.images?.[0]?.url || null;
-  const artists = item.artists?.map(({ name }) => name).join(", ") || item.show?.name || "Spotify";
+  const artists = item.artists?.map(({ name }) => name).join(", ") || item.show?.name || providerName();
   playerTrack.textContent = item.name || "Unknown track";
   playerArtist.textContent = artists;
   miniPlayer.classList.toggle("has-cover", Boolean(cover));
@@ -1027,10 +1059,11 @@ function renderPlayback(state) {
 }
 
 async function refreshPlayback() {
-  if (playbackRequestPending || !spotifyButton.classList.contains("is-connected")) return;
+  const service = activeMusicService();
+  if (playbackRequestPending || !isProviderConnected() || !service?.getPlaybackState) return;
   playbackRequestPending = true;
   try {
-    renderPlayback(await window.spotifyAuth.getPlaybackState());
+    renderPlayback(await service.getPlaybackState());
   } catch (error) {
     console.error(error);
     renderPlayback(null);
@@ -1057,17 +1090,19 @@ function stopPlaybackPolling() {
 }
 
 function playbackErrorMessage(error) {
-  const message = error?.message || "Spotify 播放控制失败";
-  if (/premium|403/i.test(message)) return "播放控制需要 Spotify Premium，请重新确认账号权限。";
-  if (/device|404/i.test(message)) return "没有可用的播放设备，请先打开 Spotify 并播放任意歌曲。";
+  const message = error?.message || `${providerName()} 播放控制失败`;
+  if (activeProviderId() === "spotify" && /premium|403/i.test(message)) return "播放控制需要 Spotify Premium，请重新确认账号权限。";
+  if (/device|404/i.test(message)) return `没有可用的播放设备，请先打开 ${providerName()} 并播放任意歌曲。`;
   return message;
 }
 
 async function runPlaybackCommand(command) {
+  const service = activeMusicService();
+  if (!service?.[command]) return;
   if (playbackRequestPending) return;
   playbackRequestPending = true;
   try {
-    await window.spotifyAuth[command]();
+    await service[command]();
     await new Promise((resolve) => window.setTimeout(resolve, 320));
   } catch (error) {
     showNotice(playbackErrorMessage(error), "error", 6500);
@@ -1078,12 +1113,13 @@ async function runPlaybackCommand(command) {
 }
 
 async function seekToLyric(positionMs) {
-  if (!spotifyButton.classList.contains("is-connected")) {
-    showNotice("请先连接 Spotify。", "info", 3200);
+  const service = activeMusicService();
+  if (!isProviderConnected() || !service?.seekPlayback) {
+    showNotice(`请先连接 ${providerName()}。`, "info", 3200);
     return;
   }
   try {
-    await window.spotifyAuth.seekPlayback(positionMs);
+    await service.seekPlayback(positionMs);
     if (playbackState) {
       playbackState.progress_ms = positionMs;
       playbackState.receivedAt = Date.now();
@@ -1099,13 +1135,14 @@ async function seekToLyric(positionMs) {
 async function playSelectedTrack(trackUri) {
   const album = albums[activeIndex];
   if (!album?.uri || !trackUri) return;
-  if (!spotifyButton.classList.contains("is-connected")) {
-    showNotice("请先连接 Spotify。", "info", 3200);
+  const service = activeMusicService();
+  if (!isProviderConnected() || !service?.playAlbum) {
+    showNotice(`请先连接 ${providerName()}。`, "info", 3200);
     return;
   }
   playbackRequestPending = true;
   try {
-    await window.spotifyAuth.playAlbum(album.uri, trackUri);
+    await service.playAlbum(album.uri, trackUri);
     await new Promise((resolve) => window.setTimeout(resolve, 420));
   } catch (error) {
     showNotice(playbackErrorMessage(error), "error", 6500);
@@ -1115,53 +1152,121 @@ async function playSelectedTrack(trackUri) {
   }
 }
 
-async function loadSpotifyCollection(showSuccess = false) {
-  setSpotifyButton("loading");
-  const { profile, items, total } = await window.spotifyAuth.getLibrary();
-  setSpotifyButton("connected", profile);
+async function loadMusicCollection(showSuccess = false) {
+  const service = activeMusicService();
+  if (!service) return;
+  setProviderButton("loading", null, activeProviderId());
+  const { profile, items, total } = await service.getLibrary();
+  setProviderButton("connected", profile, activeProviderId());
   startPlaybackPolling();
   if (items.length) {
     setCollection(items.map(mapSpotifyAlbum));
     if (showSuccess) showNotice(`已载入 ${items.length} 张收藏专辑${total > items.length ? ` · 共 ${total} 张` : ""}`);
   } else {
-    showNotice("这个 Spotify 账号暂时没有收藏专辑，继续展示演示唱片。", "info", 6000);
+    const message = activeProviderId() === "netease"
+      ? "网易云播放控制已连接；官方 CLI 暂未向网页返回收藏专辑，继续展示演示唱片。"
+      : `这个 ${providerName()} 账号暂时没有收藏专辑，继续展示演示唱片。`;
+    showNotice(message, "info", 6500);
   }
 }
 
-async function initializeSpotify() {
+async function initializeMusicProvider() {
   const parameters = new URLSearchParams(window.location.search);
   const shouldResumeLogin = parameters.get("spotify_login") === "1";
   const hasCallback = parameters.has("code") || parameters.has("error");
+  const providerId = window.musicProviders.activeId;
+  if (!providerId) {
+    setProviderButton("disconnected");
+    stopPlaybackPolling();
+    return;
+  }
+  pendingProviderId = providerId;
+  const service = activeMusicService();
   try {
-    if (shouldResumeLogin) {
+    if (providerId === "spotify" && shouldResumeLogin) {
       const cleanUrl = new URL(window.location.href);
       cleanUrl.searchParams.delete("spotify_login");
       window.history.replaceState({}, "", cleanUrl);
-      setSpotifyButton("loading");
-      await window.spotifyAuth.login();
+      setProviderButton("loading", null, providerId);
+      await service.login();
       return;
     }
-    if (hasCallback) setSpotifyButton("loading");
-    const completedLogin = await window.spotifyAuth.handleCallback();
-    if (!hasCallback && window.spotifyAuth.needsScopeUpgrade()) {
-      window.spotifyAuth.logout();
-      setSpotifyButton("disconnected");
+    if (hasCallback) setProviderButton("loading", null, providerId);
+    const completedLogin = providerId === "spotify" ? await service.handleCallback() : false;
+    if (providerId === "spotify" && !hasCallback && service.needsScopeUpgrade()) {
+      await service.logout();
+      window.musicProviders.clear();
+      pendingProviderId = null;
+      setProviderButton("disconnected");
       stopPlaybackPolling();
       showNotice("播放器需要新增 Spotify 播放权限，请点击右上角重新连接一次。", "info", 9000);
       return;
     }
-    const accessToken = await window.spotifyAuth.getAccessToken();
+    const accessToken = await service.getAccessToken();
     if (!accessToken) {
-      setSpotifyButton("disconnected");
+      window.musicProviders.clear();
+      pendingProviderId = null;
+      setProviderButton("disconnected");
       stopPlaybackPolling();
       return;
     }
-    await loadSpotifyCollection(completedLogin);
+    await loadMusicCollection(completedLogin);
   } catch (error) {
     console.error(error);
-    setSpotifyButton("disconnected");
+    window.musicProviders.clear();
+    pendingProviderId = null;
+    setProviderButton("disconnected");
     stopPlaybackPolling();
-    showNotice(error.message || "Spotify 连接失败，请重试。", "error", 8000);
+    showNotice(error.message || `${providerName()} 连接失败，请重试。`, "error", 8000);
+  }
+}
+
+function openProviderPicker() {
+  providerPicker.hidden = false;
+  providerButton.setAttribute("aria-expanded", "true");
+  providerSetup.hidden = true;
+  providerSetup.innerHTML = "";
+  window.appleMusicAuth?.prepare?.().catch(() => {});
+  window.setTimeout(() => providerPicker.querySelector("[data-provider-choice]")?.focus(), 0);
+}
+
+function closeProviderPicker() {
+  providerPicker.hidden = true;
+  providerButton.setAttribute("aria-expanded", "false");
+  providerSetup.hidden = true;
+  providerSetup.innerHTML = "";
+}
+
+function showProviderSetup(providerId) {
+  const content = window.musicProviders.setupHtml(providerId);
+  providerSetup.innerHTML = content;
+  providerSetup.hidden = !content;
+}
+
+async function connectProvider(providerId) {
+  const service = window.musicProviders.get(providerId);
+  if (!service) return;
+  pendingProviderId = providerId;
+  providerPicker.querySelectorAll("[data-provider-choice]").forEach((button) => { button.disabled = true; });
+  setProviderButton("loading", null, providerId);
+  try {
+    window.musicProviders.setActive(providerId);
+    await service.login();
+    closeProviderPicker();
+    await loadMusicCollection(true);
+  } catch (error) {
+    console.error(error);
+    window.musicProviders.clear();
+    pendingProviderId = null;
+    setProviderButton("disconnected");
+    if (providerId === "apple" || providerId === "netease") {
+      providerPicker.hidden = false;
+      providerButton.setAttribute("aria-expanded", "true");
+      showProviderSetup(providerId);
+    }
+    showNotice(error.message || `无法连接 ${window.musicProviders.metadata[providerId].name}。`, "error", 7500);
+  } finally {
+    providerPicker.querySelectorAll("[data-provider-choice]").forEach((button) => { button.disabled = false; });
   }
 }
 
@@ -1217,27 +1322,43 @@ detailClose.addEventListener("click", () => {
   else if (activeIndex !== null) selectAlbum(activeIndex);
 });
 
-spotifyButton.addEventListener("click", async () => {
-  if (spotifyButton.classList.contains("is-connected")) {
-    showNotice("Spotify 已连接。", "info", 2200);
+providerButton.addEventListener("click", () => {
+  if (isProviderConnected()) {
+    showNotice(`${providerName()} 已连接。`, "info", 2200);
     return;
   }
-  try {
-    setSpotifyButton("loading");
-    await window.spotifyAuth.login();
-  } catch (error) {
-    setSpotifyButton("disconnected");
-    showNotice(error.message || "无法打开 Spotify 登录。", "error", 7000);
+  if (providerPicker.hidden) openProviderPicker();
+  else closeProviderPicker();
+});
+
+providerPickerClose.addEventListener("click", closeProviderPicker);
+providerPicker.addEventListener("click", (event) => {
+  const choice = event.target.closest("[data-provider-choice]");
+  if (choice) connectProvider(choice.dataset.providerChoice);
+});
+document.addEventListener("pointerdown", (event) => {
+  if (providerPicker.hidden || event.target.closest("#provider-picker, #provider-auth")) return;
+  closeProviderPicker();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !providerPicker.hidden) {
+    closeProviderPicker();
+    event.stopImmediatePropagation();
   }
 });
 
-spotifyLogout.addEventListener("click", () => {
+providerLogout.addEventListener("click", async () => {
   if (document.body.classList.contains("now-playing-lyrics")) closeNowPlayingLyrics();
-  window.spotifyAuth.logout();
-  setSpotifyButton("disconnected");
+  const disconnectedName = providerName();
+  const service = activeMusicService();
+  try { await service?.logout?.(); }
+  catch (error) { console.error(error); }
+  window.musicProviders.clear();
+  pendingProviderId = null;
+  setProviderButton("disconnected");
   stopPlaybackPolling();
   setCollection([...demoAlbums]);
-  showNotice("Spotify 已断开。", "info", 2600);
+  showNotice(`${disconnectedName} 已断开。`, "info", 2600);
 });
 
 shelf.addEventListener("pointerdown", (event) => {
@@ -1339,4 +1460,4 @@ window.addEventListener("resize", () => {
 
 renderAlbums();
 updateLayout(true);
-initializeSpotify();
+initializeMusicProvider();
