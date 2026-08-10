@@ -46,6 +46,8 @@ Vercel Preview 每次可能产生不同域名，而 Spotify 不支持通配符 R
 
 ### Apple Music
 
+当前站主尚未加入付费 Apple Developer Program，因此网页中的 Apple Music 入口会以黑色“暂不可用”状态展示，不会加载 MusicKit 或尝试登录。下面的接入代码和配置说明保留，待站主具备官方开发者权限后即可启用。
+
 Apple Music 使用官方 MusicKit。浏览器只取得短期 Developer Token 和 Music User Token，`.p8` 私钥只保存在 Vercel 服务端环境变量中，不会写进前端仓库。
 
 1. 加入 [Apple Developer Program](https://developer.apple.com/programs/)，在 Certificates, Identifiers & Profiles 中创建支持 MusicKit 的 Media ID。
@@ -68,6 +70,8 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 ### 网易云音乐
 
 网易云在 2026 年发布了官方 [`@music163/ncm-cli`](https://www.npmjs.com/package/@music163/ncm-cli)，它本身支持 macOS、Windows 和 Linux。Vercel 网页无法在任何桌面系统中直接启动本地 App 或 CLI，所以三个系统都需要用户主动运行本仓库的本地桥接；网页不能也不会静默安装本机软件。
+
+重要：这是“每位访客在自己的电脑上配置”的模式，不是站主在 Vercel 配置一次后所有人都能使用。每位想连接网易云的访客，都需要自己申请 `appId` / `privateKey`、安装官方 CLI、扫码登录并保持桥接进程运行。访客的凭证只留在访客电脑上，站主和 Vercel 都不会收到。
 
 1. 在[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)完成入驻，取得 App ID 和 Private Key。
 2. 安装 Node.js 18+ 与 mpv。

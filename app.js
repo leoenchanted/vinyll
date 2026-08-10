@@ -1226,7 +1226,6 @@ function openProviderPicker() {
   providerButton.setAttribute("aria-expanded", "true");
   providerSetup.hidden = true;
   providerSetup.innerHTML = "";
-  window.appleMusicAuth?.prepare?.().catch(() => {});
   window.setTimeout(() => providerPicker.querySelector("[data-provider-choice]")?.focus(), 0);
 }
 
@@ -1244,10 +1243,15 @@ function showProviderSetup(providerId) {
 }
 
 async function connectProvider(providerId) {
+  const meta = window.musicProviders.metadata[providerId];
+  if (meta?.available === false) {
+    showProviderSetup(providerId);
+    return;
+  }
   const service = window.musicProviders.get(providerId);
   if (!service) return;
   pendingProviderId = providerId;
-  providerPicker.querySelectorAll("[data-provider-choice]").forEach((button) => { button.disabled = true; });
+  providerPicker.querySelectorAll("[data-provider-choice]:not([data-unavailable])").forEach((button) => { button.disabled = true; });
   setProviderButton("loading", null, providerId);
   try {
     window.musicProviders.setActive(providerId);
@@ -1266,7 +1270,7 @@ async function connectProvider(providerId) {
     }
     showNotice(error.message || `无法连接 ${window.musicProviders.metadata[providerId].name}。`, "error", 7500);
   } finally {
-    providerPicker.querySelectorAll("[data-provider-choice]").forEach((button) => { button.disabled = false; });
+    providerPicker.querySelectorAll("[data-provider-choice]:not([data-unavailable])").forEach((button) => { button.disabled = false; });
   }
 }
 

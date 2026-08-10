@@ -4,7 +4,7 @@
   const STORAGE_KEY = "vinyl.music.provider";
   const metadata = {
     spotify: { id: "spotify", name: "Spotify", auth: window.spotifyAuth },
-    apple: { id: "apple", name: "Apple Music", auth: window.appleMusicAuth },
+    apple: { id: "apple", name: "Apple Music", auth: window.appleMusicAuth, available: false },
     netease: { id: "netease", name: "网易云音乐", auth: window.neteaseMusicAuth },
   };
 
@@ -19,10 +19,14 @@
   }
 
   let activeId = callbackProvider() || window.localStorage.getItem(STORAGE_KEY) || null;
-  if (!validId(activeId)) activeId = null;
+  if (!validId(activeId) || metadata[activeId]?.available === false) {
+    activeId = null;
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
 
   function setActive(id) {
     if (!validId(id)) throw new Error(`Unknown music provider: ${id}`);
+    if (metadata[id].available === false) throw new Error(`${metadata[id].name} 暂不可用`);
     activeId = id;
     window.localStorage.setItem(STORAGE_KEY, id);
     return metadata[id].auth;
@@ -55,9 +59,8 @@
   function setupHtml(id) {
     if (id === "apple") {
       return `
-        <strong>Apple Music 需要站长先完成 MusicKit 配置</strong>
-        在 Apple Developer 创建 Media ID 与 MusicKit 私钥，再把 Team ID、Key ID 和 .p8 私钥放进 Vercel 环境变量。配置完成后，这里的 Apple 登录会直接弹出官方授权窗口。
-        <a href="https://developer.apple.com/documentation/applemusicapi/generating-developer-tokens" target="_blank" rel="noreferrer">查看 Apple 官方说明 ↗</a>
+        <strong>Apple Music 暂不可用</strong>
+        站主目前尚未开通付费 Apple Developer Program，因此无法创建 MusicKit 所需的 Media ID 与私钥。入口会在完成官方开发者配置后开放。
       `;
     }
 
@@ -72,10 +75,16 @@
           ? "macOS 可用 Homebrew 安装 mpv；同样需要 Node.js 18+。"
           : "需要 Node.js 18+ 与 mpv。";
       return `
-        <strong>未检测到网易云本地桥接</strong>
-        ${requirement} 浏览器不能静默安装本机软件，请在终端手动执行：
+        <strong>每台电脑都需要完成一次网易云本地配置</strong>
+        <p>这是浏览器的安全限制：Vinyll 无法直接控制访客电脑上的网易云程序，也不能替访客静默安装软件。${requirement}</p>
+        <ol>
+          <li><b>申请个人凭证：</b>前往 <a href="https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL" target="_blank" rel="noreferrer">网易云音乐开放平台 ↗</a>完成入驻，申请自己的 <code class="provider-setup__inline">appId</code> 和 <code class="provider-setup__inline">privateKey</code>。</li>
+          <li><b>安装并配置官方 CLI：</b>运行下面的命令；<code class="provider-setup__inline">ncm-cli configure</code> 会要求填写刚才的凭证，<code class="provider-setup__inline">ncm-cli login</code> 会显示二维码供网易云 App 扫码。</li>
+          <li><b>启动 Vinyll 桥接：</b>下载本仓库并运行 <code class="provider-setup__inline">bridge/server.js</code>。</li>
+          <li><b>保持终端运行：</b>回到此页面，再点一次“网易云音乐”即可连接。</li>
+        </ol>
         <code>${install}</code>
-        启动后保持终端窗口运行，再点一次“网易云音乐”。
+        <p>凭证与登录状态只保存在访客自己的电脑，不会上传到 Vinyll、Vercel 或站主服务器。</p>
         <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge" target="_blank" rel="noreferrer">查看完整安装说明 ↗</a>
       `;
     }
