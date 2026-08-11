@@ -69,33 +69,18 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 
 ### 网易云音乐
 
-网易云在 2026 年发布了官方 [`@music163/ncm-cli`](https://www.npmjs.com/package/@music163/ncm-cli)，它本身支持 macOS、Windows 和 Linux。Vercel 网页无法在任何桌面系统中直接启动本地 App 或 CLI，所以三个系统都需要用户主动运行本仓库的本地桥接；网页不能也不会静默安装本机软件。
+Windows 用户通过本地助手连接网易云音乐官方桌面客户端：下载并双击一个 EXE 即可，不需要 Node.js、mpv、ncm-cli、开放平台 App ID 或 Private Key。助手会随当前用户登录自动运行，优先通过 Windows SMTC 同步歌曲信息和播放控制。对于主动关闭 SMTC 的网易云 3.x，助手会自动切换到只针对 `cloudmusic.exe` 的本机兼容模式，继续同步歌名、歌手、专辑、封面、时长及播放状态。
 
-重要：这是“每位访客在自己的电脑上配置”的模式，不是站主在 Vercel 配置一次后所有人都能使用。每位想连接网易云的访客，都需要自己申请 `appId` / `privateKey`、安装官方 CLI、扫码登录并保持桥接进程运行。访客的凭证只留在访客电脑上，站主和 Vercel 都不会收到。
+1. 从 [GitHub Releases](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe) 下载 Windows 助手。
+2. 双击一次完成当前用户安装并启动。
+3. 在网易云音乐桌面客户端播放歌曲。
+4. 回到网站选择“网易云音乐”，首次出现本地网络权限提示时选择允许。
 
-1. 在[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)完成入驻，取得 App ID 和 Private Key。
-2. 安装 Node.js 18+ 与 mpv。
-3. 安装、配置并扫码登录官方 CLI：
+线上网页仍然不能直接调用 Windows API，所以每位访客需要在自己的 Windows 电脑上运行助手。助手只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`，网易云登录信息始终留在官方客户端中。
 
-```bash
-npm install -g @music163/ncm-cli
-ncm-cli configure
-ncm-cli login
-```
+macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
 
-4. 在克隆下来的 Vinyll 仓库根目录运行：
-
-```bash
-node bridge/server.js
-```
-
-5. 保持终端窗口运行，回到网页再次选择“网易云音乐”。
-
-macOS 可以用 `brew install mpv`；Windows 需要安装 Windows 版 mpv 并把 `mpv.exe` 所在目录加入 PATH。完整说明见 [`bridge/README.md`](bridge/README.md)。
-
-桥接只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`，并且只允许播放、暂停、上一首、下一首等固定命令。App ID、Private Key 与网易云登录状态均由官方 CLI 保存在本机，不上传到 Vercel。
-
-当前官方 CLI 可以稳定提供本机播放控制，但没有承诺供网页消费的收藏专辑 JSON 输出，所以网易云连接后会保留现有唱片架内容，并同步它能够识别的当前歌曲与播放控制；没有伪造收藏资料。后续官方若开放稳定的 Web OAuth / 收藏接口，可以在现有 provider 层中直接补上。
+网易云连接暂不伪造收藏专辑；连接后保留现有唱片架内容，只同步桌面客户端当前歌曲和播放控制。
 
 相关代码：
 
@@ -108,7 +93,8 @@ macOS 可以用 `brew install mpv`；Windows 需要安装 Windows 版 mpv 并把
 - `server.py`：本地静态服务器与歌词接口
 - `api/lyrics.py`：Vercel 上的同源歌词 Function
 - `api/apple-token.js`：在 Vercel 服务端签发短期 Apple Music Developer Token
-- `bridge/server.js`：网易云官方 CLI 的跨平台本机桥接
+- `bridge/windows/Vinyll.NeteaseBridge`：Windows SMTC 网易云本地助手
+- `bridge/server.js`：macOS / Linux 的网易云 CLI 本地桥接
 
 ## 部署到 Vercel
 

@@ -1017,10 +1017,10 @@ function updatePlaybackProgress() {
   playerProgress.style.width = `${(progress / playbackState.item.duration_ms) * 100}%`;
 }
 
-function setPlaybackControlsEnabled(enabled) {
-  playerPrevious.disabled = !enabled;
-  playerToggle.disabled = !enabled;
-  playerNext.disabled = !enabled;
+function setPlaybackControlsEnabled(enabled, capabilities = null) {
+  playerPrevious.disabled = !enabled || capabilities?.previous === false;
+  playerToggle.disabled = !enabled || capabilities?.pause === false;
+  playerNext.disabled = !enabled || capabilities?.next === false;
   syncNowPlayingLyricsToggle();
 }
 
@@ -1049,7 +1049,7 @@ function renderPlayback(state) {
   else miniPlayer.style.removeProperty("--player-cover");
   playerToggle.setAttribute("aria-pressed", String(Boolean(playbackState.is_playing)));
   playerToggle.setAttribute("aria-label", playbackState.is_playing ? "暂停" : "播放");
-  setPlaybackControlsEnabled(Boolean(playbackState.device));
+  setPlaybackControlsEnabled(Boolean(playbackState.device), playbackState.capabilities);
   updatePlaybackProgress();
   if (document.body.classList.contains("now-playing-lyrics")) {
     renderNowPlayingVisual(item);
@@ -1114,6 +1114,10 @@ async function runPlaybackCommand(command) {
 
 async function seekToLyric(positionMs) {
   const service = activeMusicService();
+  if (playbackState?.capabilities?.seek === false) {
+    showNotice("当前网易云客户端没有开放进度跳转控制。", "info", 3200);
+    return;
+  }
   if (!isProviderConnected() || !service?.seekPlayback) {
     showNotice(`请先连接 ${providerName()}。`, "info", 3200);
     return;

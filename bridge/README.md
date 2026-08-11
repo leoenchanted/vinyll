@@ -1,50 +1,61 @@
-# 网易云音乐本地桥接
+# 网易云音乐本地连接
 
-Vinyll 部署在浏览器中，浏览器不能直接执行本机的网易云应用或 CLI。这个桥接只监听 `127.0.0.1:17863`，将网页的播放、暂停、上一首、下一首请求转交给网易云官方 `ncm-cli`。
+Vinyll 是线上网页，浏览器不能直接读取电脑上的系统媒体信息，因此需要一个只监听 `127.0.0.1:17863` 的本地助手。播放信息只在当前电脑内传递，不上传网易云账号、Cookie 或密码。
 
-## 通用准备
+## Windows（推荐）
+
+Windows 版本通过 SMTC（Windows 系统媒体会话）直接连接网易云音乐桌面客户端。用户不需要申请开放平台凭证，也不需要安装 Node.js、mpv 或 ncm-cli。
+
+1. 从 [GitHub Releases](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe) 下载 `Vinyll.NeteaseBridge-win-x64.exe`。
+2. 双击一次。助手会复制到 `%LOCALAPPDATA%\Vinyll\Vinyll.NeteaseBridge.exe`、注册当前用户开机启动，并驻留在系统托盘。
+3. 打开网易云音乐 Windows 桌面客户端，播放一首歌。
+4. 打开 [Vinyll](https://vinyll.leoenchanted.top)，选择“网易云音乐”。Chrome/Edge 首次询问本地网络访问权限时选择“允许”。
+
+助手优先使用 Windows SMTC，同步歌名、歌手、专辑、封面、进度和播放状态，并支持暂停、继续、上一首、下一首及歌词进度跳转。它只选择来源标识包含 `cloudmusic`、`netease` 或 `music163` 的系统媒体会话，不会误读 Spotify 或浏览器视频。
+
+部分网易云 3.x 版本（包括已验证的 `3.1.21.204647`）主动关闭了 SMTC。助手检测不到网易云 SMTC 时，会只针对 `cloudmusic.exe` 启用本机兼容模式：通过窗口标题识别当前歌曲，从网易云自己的 `playingList` 文件补齐专辑、封面和时长，再用 Windows 音频会话判断播放状态。兼容模式开放已验证可靠的上一首/下一首；为避免系统媒体键误控 Chrome，暂停与进度跳转按钮会禁用。
+
+### 托盘菜单
+
+右键系统托盘中的助手图标，可以打开 Vinyll、开关开机启动、查看日志或退出助手。运行日志位于 `%LOCALAPPDATA%\Vinyll\bridge.log`。
+
+### 常见问题
+
+- **提示端口 17863 被占用：**关闭以前运行的 `node bridge/server.js` 终端，再重新打开助手。
+- **网页显示等待播放：**确认 `cloudmusic.exe` 正在运行并播放歌曲。即使 Windows 媒体面板没有网易云，助手也会自动尝试兼容模式。
+- **浏览器连接失败：**确认助手正在托盘运行，并允许 Vinyll 的“本地网络访问”权限。
+- **SmartScreen 提示未知发布者：**当前 GitHub Release 构建尚未购买代码签名证书。请确认文件来自本仓库 Release；以后配置 EV/OV 代码签名后可消除此提示。
+- **安装新版本：**下载并双击新版 EXE。它会关闭旧助手、覆盖当前用户目录中的版本并重新启动。
+
+Windows 助手源码位于 [`windows/Vinyll.NeteaseBridge`](windows/Vinyll.NeteaseBridge)，Release 由 GitHub Actions 从该源码自动构建。
+
+## macOS / Linux（保留原 CLI 方式）
+
+非 Windows 系统继续使用网易云官方 `ncm-cli`：
 
 1. 安装 Node.js 18 或更高版本。
 2. 安装 `mpv` 并确保终端能运行 `mpv --version`。
-3. 在[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)入驻并取得 App ID 和 Private Key。
-4. 安装并登录网易云官方 CLI：
+3. 在[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)取得 App ID 和 Private Key。
+4. 安装、配置并登录 CLI：
 
 ```bash
 npm install -g @music163/ncm-cli
 ncm-cli configure
 ncm-cli login
-```
-
-`ncm-cli login` 会在终端显示二维码，用网易云音乐 App 扫码确认。
-
-## macOS
-
-如果使用 Homebrew，可以先安装 mpv：
-
-```bash
-brew install mpv
-```
-
-在本仓库根目录启动桥接：
-
-```bash
 node bridge/server.js
 ```
 
-## Windows
+macOS 可以使用 `brew install mpv`。保持 `node bridge/server.js` 的终端窗口运行，再回到网页连接。
 
-安装 Windows 版 Node.js 与 mpv，把 `mpv.exe` 所在目录加入 PATH，然后在 PowerShell 中完成上面的 CLI 配置。进入仓库根目录后运行：
+## 安全边界
 
-```powershell
-node bridge\server.js
-```
+- 助手只绑定 `127.0.0.1`，局域网内其他电脑无法访问。
+- 默认只接受本地开发地址与 `https://vinyll.leoenchanted.top` 的浏览器请求。
+- 只开放读取播放状态以及播放、暂停、上一首、下一首、跳转进度等固定操作。
+- 网易云登录完全由官方桌面客户端负责；Vinyll 不接触账号密码。
 
-## 自定义部署域名
-
-默认只允许本地开发地址和 `https://vinyll.leoenchanted.top` 访问桥接。若你使用其他正式域名，启动前设置逗号分隔的白名单：
+非 Windows CLI 桥接若需要允许其他正式域名，可在启动前设置：
 
 ```bash
 VINYLL_BRIDGE_ORIGINS=https://你的域名.example node bridge/server.js
 ```
-
-网页无法静默安装本地软件，这个限制在 macOS 和 Windows 上相同。桥接不会把网易云的 App ID、Private Key 或登录信息上传到 Vinyll，也不接受任意终端命令。

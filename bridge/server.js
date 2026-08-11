@@ -12,6 +12,8 @@ const EXTRA_ORIGINS = String(process.env.VINYLL_BRIDGE_ORIGINS || "")
   .filter(Boolean);
 const FIXED_ORIGINS = new Set(["https://vinyll.leoenchanted.top", ...EXTRA_ORIGINS]);
 const CONTROL_COMMANDS = new Set(["pause", "resume", "next", "prev"]);
+const IS_WINDOWS = process.platform === "win32";
+const CLI_COMMAND = IS_WINDOWS ? "ncm-cli.cmd" : "ncm-cli";
 
 function originAllowed(origin) {
   if (!origin) return true;
@@ -48,8 +50,9 @@ function cleanTerminal(value) {
 
 function runCli(args, timeoutMs = 7000) {
   return new Promise((resolve) => {
-    const child = spawn("ncm-cli", args, {
-      shell: false,
+    const child = spawn(CLI_COMMAND, args, {
+      // npm exposes global CLIs as .cmd shims on Windows; they require cmd.exe.
+      shell: IS_WINDOWS,
       windowsHide: true,
       env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },
       stdio: ["ignore", "pipe", "pipe"],

@@ -66,12 +66,25 @@
 
     if (id === "netease") {
       const os = platform();
+      if (os === "windows") {
+        return `
+          <strong>直接连接网易云音乐 Windows 桌面客户端</strong>
+          <p>无需申请开发者凭证，也不再需要 Node.js、mpv 或 ncm-cli。助手优先读取 Windows 系统媒体会话；若当前网易云版本关闭了 SMTC，则只从 <code class="provider-setup__inline">cloudmusic.exe</code> 窗口和本机播放队列补齐当前歌曲信息，不会读取账号密码。</p>
+          <ol>
+            <li><b>下载助手：</b>点击下方按钮，下载单文件 Windows 助手。</li>
+            <li><b>双击安装：</b>助手会安装到当前用户目录、自动启动并驻留在系统托盘；不需要管理员权限。</li>
+            <li><b>播放歌曲：</b>打开网易云音乐桌面客户端并播放任意歌曲。</li>
+            <li><b>允许本地访问：</b>回到 Vinyll，再点一次“网易云音乐”；浏览器首次询问本地网络权限时请选择允许。</li>
+          </ol>
+          <a href="https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe">下载 Windows 本地助手 ↓</a>
+          <p>如果 Windows SmartScreen 提示未知发布者，请先确认下载地址为本项目 GitHub Releases。正式代码签名证书可在后续消除该提示。</p>
+          <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge#windows推荐" target="_blank" rel="noreferrer">查看安装与排错说明 ↗</a>
+        `;
+      }
       const install = os === "macos"
         ? `brew install mpv\nnpm install -g @music163/ncm-cli\nncm-cli configure\nncm-cli login\ngit clone https://github.com/leoenchanted/vinyll.git\ncd vinyll/bridge && node server.js`
         : `npm install -g @music163/ncm-cli\nncm-cli configure\nncm-cli login\ngit clone https://github.com/leoenchanted/vinyll.git\ncd vinyll\\bridge\nnode server.js`;
-      const requirement = os === "windows"
-        ? "Windows 需要先安装 Node.js 18+ 与 mpv，并确保 mpv 在 PATH 中。"
-        : os === "macos"
+      const requirement = os === "macos"
           ? "macOS 可用 Homebrew 安装 mpv；同样需要 Node.js 18+。"
           : "需要 Node.js 18+ 与 mpv。";
       return `
