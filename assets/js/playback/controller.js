@@ -11,6 +11,8 @@ function updatePlaybackProgress() {
 }
 
 function setPlaybackControlsEnabled(enabled, capabilities = null) {
+  const readOnly = Boolean(capabilities && capabilities.pause === false && capabilities.next === false && capabilities.previous === false);
+  miniPlayer.classList.toggle("is-read-only", readOnly);
   playerPrevious.disabled = !enabled || capabilities?.previous === false;
   playerToggle.disabled = !enabled || capabilities?.pause === false;
   playerNext.disabled = !enabled || capabilities?.next === false;
@@ -22,11 +24,15 @@ function renderPlayback(state) {
   if (!playbackState) {
     miniPlayer.classList.remove("has-cover");
     miniPlayer.style.removeProperty("--player-cover");
-    playerTrack.textContent = isProviderConnected() ? "Nothing playing" : "Connect music";
-    playerArtist.textContent = isProviderConnected() ? `请先在 ${providerName()} 开始播放` : "选择你的音乐平台";
+    const readOnlyProvider = activeMusicService()?.capabilities?.playbackControl === false;
+    miniPlayer.classList.toggle("is-read-only", Boolean(isProviderConnected() && readOnlyProvider));
+    playerTrack.textContent = isProviderConnected() ? (readOnlyProvider ? "等待本地播放" : "Nothing playing") : "Connect music";
+    playerArtist.textContent = isProviderConnected()
+      ? (readOnlyProvider ? `请在 ${providerName()} App 内播放` : `请先在 ${providerName()} 开始播放`)
+      : "选择你的音乐平台";
     playerToggle.setAttribute("aria-pressed", "false");
     playerToggle.setAttribute("aria-label", "播放");
-    setPlaybackControlsEnabled(false);
+    setPlaybackControlsEnabled(false, readOnlyProvider ? { pause: false, next: false, previous: false } : null);
     updatePlaybackProgress();
     if (detailMode === "lyrics") renderLyricsMessage("还没有正在播放的歌曲", `请先在 ${providerName()} 播放一首歌。`);
     return;

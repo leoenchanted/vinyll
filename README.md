@@ -6,13 +6,21 @@
 
 ## 本地运行
 
-使用项目自带的本地服务器运行，这样页面和 `/api/lyrics` 歌词接口都会生效：
+先安装 Node.js 22 和项目依赖：
+
+```bash
+npm install
+```
+
+普通视觉开发可以使用项目自带的本地服务器，这样页面和 `/api/lyrics` 歌词接口都会生效：
 
 ```bash
 python3 server.py --port 8000
 ```
 
 然后访问 `http://127.0.0.1:8000/`。也可以换成其他空闲端口。
+
+网易云扫码登录依赖 Vercel Functions，本地联调该功能时使用 `npx vercel dev`；部署到 Vercel 后无需额外进程。
 
 ## 音乐平台登录
 
@@ -69,18 +77,23 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 
 ### 网易云音乐
 
-Windows 用户通过本地助手连接网易云音乐官方桌面客户端：下载并双击一个 EXE 即可，不需要 Node.js、mpv、ncm-cli、开放平台 App ID 或 Private Key。助手会随当前用户登录自动运行，优先通过 Windows SMTC 同步歌曲信息和播放控制。对于主动关闭 SMTC 的网易云 3.x，助手会自动切换到只针对 `cloudmusic.exe` 的本机兼容模式，继续同步歌名、歌手、专辑、封面、时长及播放状态。
+网易云入口包含两项彼此独立的能力：
+
+- **收藏唱片架：**使用网易云音乐 App 扫码登录，网页读取用户收藏的专辑、封面、歌手、发行时间和完整曲目列表。点击曲目不会在网页播放。
+- **Windows 本地播放同步（可选）：**本地助手只读网易云桌面客户端当前歌曲、封面、进度和播放状态，Vinyll 据此展示当前黑胶和同步歌词。暂停、切歌和拖动进度始终在网易云 App 内完成。
+
+收藏唱片架部署在 Vercel Functions 上，使用 `@neteasecloudmusicapienhanced/api` 访问对应的只读接口。登录 Cookie 仅保存在同源、`HttpOnly`、`SameSite=Lax` 的浏览器会话 Cookie 中，不写入 `localStorage`，前端也无法读取；项目不接触用户密码。请求按页读取、主动限速，并在当前标签页缓存收藏元数据 10 分钟，以减少重复请求和触发风控的概率。
+
+需要当前歌曲和歌词的 Windows 用户再安装本地助手即可；只浏览收藏专辑不需要助手：
 
 1. 从 [GitHub Releases](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe) 下载 Windows 助手。
 2. 双击一次完成当前用户安装并启动。
 3. 在网易云音乐桌面客户端播放歌曲。
-4. 回到网站选择“网易云音乐”，首次出现本地网络权限提示时选择允许。
+4. 回到网站；首次出现本地网络权限提示时选择允许。
 
-线上网页仍然不能直接调用 Windows API，所以每位访客需要在自己的 Windows 电脑上运行助手。助手只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`，网易云登录信息始终留在官方客户端中。
+线上网页仍然不能直接调用 Windows API，所以需要本地播放同步的访客必须在自己的 Windows 电脑上运行助手。助手只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`；它不读取扫码登录 Cookie，也不上传桌面播放信息。
 
 macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
-
-网易云连接暂不伪造收藏专辑；连接后保留现有唱片架内容，只同步桌面客户端当前歌曲和播放控制。
 
 ## 代码结构
 
@@ -93,7 +106,8 @@ macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完�
 - `assets/js/app/`：共享状态、事件绑定和页面启动
 - `assets/css/`：按页面基础、平台、播放器、封套、黑胶、详情、歌词和响应式样式拆分
 - `backend/lyrics/`：LRCLIB、QQ 音乐、网易云歌词源及聚合缓存
-- `api/`：Vercel 歌词和 Apple Music Token Functions
+- `backend/netease/`：网易云会话安全、数据归一化与上游错误处理
+- `api/`：Vercel 歌词、Apple Music Token 和网易云 Functions
 - `bridge/`：macOS / Linux CLI 桥接及 Windows SMTC 助手
 
 完整目录说明和常见修改入口见 [`docs/architecture.md`](docs/architecture.md)。
@@ -102,8 +116,10 @@ macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完�
 
 1. 在 Vercel 中导入这个 GitHub 仓库。
 2. Framework Preset 选择 `Other`；项目根目录保持仓库根目录。
-3. 不需要填写 Build Command 或 Output Directory；如果要启用 Apple Music，按上文添加四个 Apple Music 环境变量。
+3. 不需要填写 Build Command 或 Output Directory；Vercel 会按照 `package.json` 安装 Node 22 依赖。如果要启用 Apple Music，按上文添加四个 Apple Music 环境变量。
 4. 部署完成后，把稳定的 Production 地址加入 Spotify Redirect URIs。
 5. 绑定 `vinyll.leoenchanted.top` 后，再把 `https://vinyll.leoenchanted.top/` 加入 Spotify Redirect URIs。
 
-根目录静态文件会由 Vercel CDN 托管，`api/lyrics.py` 会自动部署为 `/api/lyrics` Python Function，`api/apple-token.js` 会部署为 `/api/apple-token` Node.js Function。Spotify 使用纯前端 PKCE，因此不需要在 Vercel 中配置 Spotify Client Secret；网易云凭证也只配置在用户本机的官方 CLI 中。
+根目录静态文件会由 Vercel CDN 托管，`api/lyrics.py` 会部署为 `/api/lyrics` Python Function，`api/apple-token.js` 和 `api/netease/` 会部署为 Node.js Functions。Spotify 使用纯前端 PKCE，因此不需要 Spotify Client Secret；网易云扫码登录也不需要开放平台 App ID 或额外 Vercel 环境变量。
+
+`vercel.json` 将 Functions 固定在香港区域并给网易云接口设置 30 秒上限，以减少中国大陆访问延迟。第三方非官方接口仍可能受到网易云策略、账号状态或 Vercel 出口 IP 风控影响；代码会返回明确错误并允许用户稍后重试，但不能从技术上承诺永不触发风控。

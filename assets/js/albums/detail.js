@@ -51,7 +51,7 @@ async function hydrateAlbumDetail(index, requestId) {
     album.copyrights = details.copyrights || album.copyrights;
     album.albumType = details.album_type || album.albumType;
     album.totalTracks = details.total_tracks || album.totalTracks;
-    album.tracks = details.tracks?.items?.map(mapSpotifyTrack) || album.tracks;
+    album.tracks = details.tracks?.items?.map(mapProviderTrack) || album.tracks;
     if (activeIndex === index) renderAlbumDetail(album);
   } catch (error) {
     console.error(error);

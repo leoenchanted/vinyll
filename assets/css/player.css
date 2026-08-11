@@ -55,6 +55,15 @@ body.has-selection .mini-player {
 }
 .mini-player__copy span { color: var(--muted); font-size: 8px; letter-spacing: .015em; }
 .mini-player__controls { display: flex; align-items: center; gap: 0; }
+.mini-player.is-read-only .mini-player__controls > :not(.mini-player__lyrics-toggle) { display: none; }
+.mini-player.is-read-only .mini-player__controls::before {
+  content: "APP";
+  margin-right: 3px;
+  color: var(--muted);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
 .mini-player__controls button {
   width: 25px;
   height: 25px;

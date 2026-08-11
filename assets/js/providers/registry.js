@@ -68,37 +68,20 @@
       const os = platform();
       if (os === "windows") {
         return `
-          <strong>直接连接网易云音乐 Windows 桌面客户端</strong>
-          <p>无需申请开发者凭证，也不再需要 Node.js、mpv 或 ncm-cli。助手优先读取 Windows 系统媒体会话；若当前网易云版本关闭了 SMTC，则只从 <code class="provider-setup__inline">cloudmusic.exe</code> 窗口和本机播放队列补齐当前歌曲信息，不会读取账号密码。</p>
+          <strong>收藏专辑与本地播放彼此独立</strong>
+          <p>扫码登录只用于载入收藏专辑和曲目。Windows 助手是可选项，只读取网易云桌面客户端正在播放的歌曲、封面和进度，用来显示黑胶与同步歌词。</p>
           <ol>
-            <li><b>下载助手：</b>点击下方按钮，下载单文件 Windows 助手。</li>
-            <li><b>双击安装：</b>助手会安装到当前用户目录、自动启动并驻留在系统托盘；不需要管理员权限。</li>
-            <li><b>播放歌曲：</b>打开网易云音乐桌面客户端并播放任意歌曲。</li>
-            <li><b>允许本地访问：</b>回到 Vinyll，再点一次“网易云音乐”；浏览器首次询问本地网络权限时请选择允许。</li>
+            <li><b>收藏专辑：</b>重新选择网易云音乐，使用 App 扫码登录。</li>
+            <li><b>同步播放：</b>如需当前歌曲和歌词，再下载并双击 Windows 助手。</li>
+            <li><b>控制播放：</b>暂停、切歌和拖动进度始终在网易云音乐 App 内完成。</li>
           </ol>
           <a href="https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe">下载 Windows 本地助手 ↓</a>
-          <p>如果 Windows SmartScreen 提示未知发布者，请先确认下载地址为本项目 GitHub Releases。正式代码签名证书可在后续消除该提示。</p>
           <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge#windows推荐" target="_blank" rel="noreferrer">查看安装与排错说明 ↗</a>
         `;
       }
-      const install = os === "macos"
-        ? `brew install mpv\nnpm install -g @music163/ncm-cli\nncm-cli configure\nncm-cli login\ngit clone https://github.com/leoenchanted/vinyll.git\ncd vinyll/bridge && node server.js`
-        : `npm install -g @music163/ncm-cli\nncm-cli configure\nncm-cli login\ngit clone https://github.com/leoenchanted/vinyll.git\ncd vinyll\\bridge\nnode server.js`;
-      const requirement = os === "macos"
-          ? "macOS 可用 Homebrew 安装 mpv；同样需要 Node.js 18+。"
-          : "需要 Node.js 18+ 与 mpv。";
       return `
-        <strong>每台电脑都需要完成一次网易云本地配置</strong>
-        <p>这是浏览器的安全限制：Vinyll 无法直接控制访客电脑上的网易云程序，也不能替访客静默安装软件。${requirement}</p>
-        <ol>
-          <li><b>申请个人凭证：</b>前往 <a href="https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL" target="_blank" rel="noreferrer">网易云音乐开放平台 ↗</a>完成入驻，申请自己的 <code class="provider-setup__inline">appId</code> 和 <code class="provider-setup__inline">privateKey</code>。</li>
-          <li><b>安装并配置官方 CLI：</b>运行下面的命令；<code class="provider-setup__inline">ncm-cli configure</code> 会要求填写刚才的凭证，<code class="provider-setup__inline">ncm-cli login</code> 会显示二维码供网易云 App 扫码。</li>
-          <li><b>启动 Vinyll 桥接：</b>下载本仓库并运行 <code class="provider-setup__inline">bridge/server.js</code>。</li>
-          <li><b>保持终端运行：</b>回到此页面，再点一次“网易云音乐”即可连接。</li>
-        </ol>
-        <code>${install}</code>
-        <p>凭证与登录状态只保存在访客自己的电脑，不会上传到 Vinyll、Vercel 或站主服务器。</p>
-        <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge" target="_blank" rel="noreferrer">查看完整安装说明 ↗</a>
+        <strong>收藏专辑可以直接使用</strong>
+        <p>使用网易云音乐 App 扫码后即可浏览收藏专辑与曲目。当前歌曲的本地只读同步目前优先支持 Windows；${os === "macos" ? "macOS" : "当前系统"}仍可正常使用网页收藏唱片架。</p>
       `;
     }
     return "";

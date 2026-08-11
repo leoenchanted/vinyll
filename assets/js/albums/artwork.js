@@ -1,6 +1,6 @@
 // Album mapping, cover palette extraction, and generated demo artwork.
 
-function mapSpotifyTrack(track, index) {
+function mapProviderTrack(track, index) {
   return {
     id: track.id,
     uri: track.uri,
@@ -113,7 +113,7 @@ async function applyExtractedPalette(element, album, useAsCurrentTheme = false) 
   }
 }
 
-function mapSpotifyAlbum({ album }, index) {
+function mapProviderAlbum({ album }, index) {
   const [color, ink, label] = paletteFor(album.id || `${album.name}-${index}`);
   return {
     id: album.id,
@@ -127,7 +127,7 @@ function mapSpotifyAlbum({ album }, index) {
     uri: album.uri || null,
     albumType: album.album_type || "album",
     totalTracks: album.total_tracks || album.tracks?.total || 0,
-    tracks: album.tracks?.items?.map(mapSpotifyTrack) || [],
+    tracks: album.tracks?.items?.map(mapProviderTrack) || [],
     color,
     ink,
     label,

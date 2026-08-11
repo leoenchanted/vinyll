@@ -3,6 +3,10 @@
   "functions": {
     "api/lyrics.py": {
       "maxDuration": 30
+    },
+    "api/netease/**/*.js": {
+      "maxDuration": 30
     }
-  }
+  },
+  "regions": ["hkg1"]
 }

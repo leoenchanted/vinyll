@@ -9,20 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Styles are ordered from shared foundations to component and responsive overrides. -->
-  <link rel="stylesheet" href="assets/css/base.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/providers.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/player.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/album.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/jacket.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/vinyl.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/now-playing.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/album-info.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/album-detail.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/lyrics.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/now-playing-detail.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/controls.css?v=20260811-18">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/base.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/providers.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/player.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/album.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/jacket.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/vinyl.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/now-playing.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/album-info.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/album-detail.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/lyrics.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/now-playing-detail.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/controls.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=20260812-1">
 </head>
 <body>
   <div class="ambient"></div>
@@ -101,11 +101,49 @@
       </button>
       <button class="provider-choice provider-choice--netease" type="button" data-provider-choice="netease">
         <span class="provider-choice__mark"><svg viewBox="0 0 24 24"><path d="M10.2 6.7c2-2.3 5.6-2.5 7.8-.3 2.4 2.4 1.9 6.4-.7 8.2-2.1 1.5-5.1 1.2-6.8-.6-1.4-1.5-1.6-3.9-.3-5.4 1.1-1.3 3.1-1.5 4.4-.4 1.2 1 1.4 2.9.3 4-.8.8-2.2.8-3 0-.6-.6-.6-1.6-.1-2.2M9.6 6.6C7.2 4.7 3.5 5.5 2.2 8.3c-1.4 3.1.7 6.5 3.9 7 2.6.4 5.1-1.3 5.6-3.7"/></svg></span>
-        <span><strong>网易云音乐</strong><small>Windows 单文件助手，直接连接桌面客户端</small></span><i>→</i>
+        <span><strong>网易云音乐</strong><small>扫码载入收藏专辑 · 本地播放只读同步</small></span><i>→</i>
       </button>
     </div>
     <div id="provider-setup" class="provider-setup" hidden></div>
     <p class="provider-picker__privacy">一次只连接一个平台。账户令牌不会在平台之间共享。</p>
+  </section>
+
+  <section id="netease-login" class="netease-login" role="dialog" aria-modal="true" aria-labelledby="netease-login-title" hidden>
+    <button class="netease-login__backdrop" type="button" aria-label="取消网易云登录" data-netease-login-close></button>
+    <div class="netease-login__sheet">
+      <div class="netease-login__rail" aria-hidden="true">
+        <span>33⅓</span>
+        <i></i>
+        <span>NCM</span>
+      </div>
+      <div class="netease-login__content">
+        <header class="netease-login__header">
+          <div>
+            <p>Saved records</p>
+            <h2 id="netease-login-title">扫描唱片内页</h2>
+          </div>
+          <button class="netease-login__close" type="button" aria-label="取消登录" data-netease-login-close>
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </header>
+        <p class="netease-login__intro">使用网易云音乐 App 扫码确认。Vinyll 只读取你的收藏专辑与专辑曲目，不获取密码，也不会在网页播放歌曲。</p>
+        <div class="netease-login__qr-frame">
+          <div class="netease-login__qr-placeholder" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img id="netease-login-qr" alt="网易云音乐登录二维码" hidden>
+          <span class="netease-login__scan-line" aria-hidden="true"></span>
+        </div>
+        <div id="netease-login-status" class="netease-login__status" data-state="loading" aria-live="polite">
+          <i aria-hidden="true"></i>
+          <span>正在准备登录二维码…</span>
+        </div>
+        <button id="netease-login-retry" class="netease-login__retry" type="button" hidden>重新生成二维码</button>
+        <div class="netease-login__footnote">
+          <span>收藏库</span><b>只读</b>
+          <span>Windows 播放</span><b>可选同步</b>
+          <span>播放控制</span><b>留在 App</b>
+        </div>
+      </div>
+    </div>
   </section>
 
   <main class="experience">
@@ -166,24 +204,24 @@
   <div id="notice" class="notice"></div>
 
   <!-- Provider adapters expose one shared browser API before the app controllers start. -->
-  <script src="assets/js/providers/spotify.js?v=20260811-18"></script>
-  <script src="assets/js/providers/apple-music.js?v=20260811-18"></script>
-  <script src="assets/js/providers/netease-music.js?v=20260811-18"></script>
-  <script src="assets/js/providers/registry.js?v=20260811-18"></script>
-  <script src="assets/js/services/lyrics.js?v=20260811-18"></script>
+  <script src="assets/js/providers/spotify.js?v=20260812-1"></script>
+  <script src="assets/js/providers/apple-music.js?v=20260812-1"></script>
+  <script src="assets/js/providers/netease-music.js?v=20260812-1"></script>
+  <script src="assets/js/providers/registry.js?v=20260812-1"></script>
+  <script src="assets/js/services/lyrics.js?v=20260812-1"></script>
 
   <!-- App modules are classic scripts so they share the existing state without a build step. -->
-  <script src="assets/js/data/demo-albums.js?v=20260811-18"></script>
-  <script src="assets/js/app/state.js?v=20260811-18"></script>
-  <script src="assets/js/utils/format.js?v=20260811-18"></script>
-  <script src="assets/js/albums/artwork.js?v=20260811-18"></script>
-  <script src="assets/js/albums/detail.js?v=20260811-18"></script>
-  <script src="assets/js/lyrics/view.js?v=20260811-18"></script>
-  <script src="assets/js/playback/now-playing.js?v=20260811-18"></script>
-  <script src="assets/js/albums/shelf.js?v=20260811-18"></script>
-  <script src="assets/js/providers/state.js?v=20260811-18"></script>
-  <script src="assets/js/playback/controller.js?v=20260811-18"></script>
-  <script src="assets/js/providers/controller.js?v=20260811-18"></script>
-  <script src="assets/js/app/bootstrap.js?v=20260811-18"></script>
+  <script src="assets/js/data/demo-albums.js?v=20260812-1"></script>
+  <script src="assets/js/app/state.js?v=20260812-1"></script>
+  <script src="assets/js/utils/format.js?v=20260812-1"></script>
+  <script src="assets/js/albums/artwork.js?v=20260812-1"></script>
+  <script src="assets/js/albums/detail.js?v=20260812-1"></script>
+  <script src="assets/js/lyrics/view.js?v=20260812-1"></script>
+  <script src="assets/js/playback/now-playing.js?v=20260812-1"></script>
+  <script src="assets/js/albums/shelf.js?v=20260812-1"></script>
+  <script src="assets/js/providers/state.js?v=20260812-1"></script>
+  <script src="assets/js/playback/controller.js?v=20260812-1"></script>
+  <script src="assets/js/providers/controller.js?v=20260812-1"></script>
+  <script src="assets/js/app/bootstrap.js?v=20260812-1"></script>
 </body>
 </html>

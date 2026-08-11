@@ -8,12 +8,10 @@ async function loadMusicCollection(showSuccess = false) {
   setProviderButton("connected", profile, activeProviderId());
   startPlaybackPolling();
   if (items.length) {
-    setCollection(items.map(mapSpotifyAlbum));
+    setCollection(items.map(mapProviderAlbum));
     if (showSuccess) showNotice(`已载入 ${items.length} 张收藏专辑${total > items.length ? ` · 共 ${total} 张` : ""}`);
   } else {
-    const message = activeProviderId() === "netease"
-      ? "网易云播放控制已连接；官方 CLI 暂未向网页返回收藏专辑，继续展示演示唱片。"
-      : `这个 ${providerName()} 账号暂时没有收藏专辑，继续展示演示唱片。`;
+    const message = `这个 ${providerName()} 账号暂时没有收藏专辑，继续展示演示唱片。`;
     showNotice(message, "info", 6500);
   }
 }
@@ -111,6 +109,8 @@ async function connectProvider(providerId) {
     window.musicProviders.clear();
     pendingProviderId = null;
     setProviderButton("disconnected");
+    stopPlaybackPolling();
+    if (error.code === "NETEASE_LOGIN_CANCELLED") return;
     if (providerId === "apple" || providerId === "netease") {
       providerPicker.hidden = false;
       providerButton.setAttribute("aria-expanded", "true");

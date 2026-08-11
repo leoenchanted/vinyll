@@ -34,7 +34,9 @@ backend/lyrics/
 ├── service.py              # 并发查询、缓存和结果聚合
 └── providers/              # LRCLIB、QQ 音乐、网易云歌词源
 
-api/                        # Vercel Functions
+backend/netease/             # 网易云会话、数据归一化和上游错误处理
+
+api/                        # Vercel Functions（歌词、Apple Token、网易云）
 bridge/                     # 网易云本地桥接与 Windows 助手
 index.html                  # 页面结构与前端资源载入顺序
 server.py                   # 本地静态服务器入口
@@ -48,6 +50,8 @@ server.py                   # 本地静态服务器入口
 - 调整专辑详情：`assets/js/albums/detail.js` 和 `assets/css/album-detail.css`
 - 调整歌词同步：`assets/js/lyrics/view.js` 和 `backend/lyrics/`
 - 调整平台登录或 API 映射：`assets/js/providers/`
-- 调整播放状态轮询和控制：`assets/js/playback/controller.js`
+- 调整播放状态轮询和控制边界：`assets/js/playback/controller.js`
+
+网易云扫码会话只存在服务端设置的 HttpOnly Cookie 中。`api/netease/` 读取收藏库与专辑详情后，将数据归一化为前端共享专辑结构；Windows 本地助手是独立的只读播放状态来源，不参与账户登录或收藏读取。
 
 新增前端文件后，要在 `index.html` 中按依赖顺序载入。共享状态定义在 `assets/js/app/state.js`，最后由 `assets/js/app/bootstrap.js` 绑定事件并启动页面。

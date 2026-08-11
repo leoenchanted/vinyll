@@ -28,6 +28,7 @@ function setProviderButton(state, profile = null, providerId = activeProviderId(
   providerButton.disabled = state === "loading";
   providerButton.classList.toggle("is-connected", connected);
   providerButton.dataset.provider = connected && providerId ? providerId : "none";
+  document.body.dataset.musicProvider = connected && providerId ? providerId : "none";
   providerButton.setAttribute("aria-label", connected
     ? `${meta?.name || "音乐平台"} 已连接${profile?.display_name ? ` · ${profile.display_name}` : ""}`
     : "选择音乐平台");

@@ -94,15 +94,20 @@ function stopLyricsSync() {
 
 function renderLyrics(result, metadata) {
   const hasTranslation = result.lines.some(({ translation }) => Boolean(translation));
+  const canSeek = playbackState?.capabilities?.seek !== false && Boolean(activeMusicService()?.seekPlayback);
   lyricsPanel.classList.toggle("show-translation", hasTranslation);
   lyricsTranslationToggle.hidden = !hasTranslation;
   lyricsTranslationToggle.setAttribute("aria-pressed", String(hasTranslation));
-  lyricsLines.innerHTML = result.lines.map((line, index) => `
-    <button class="lyrics-line" type="button" data-lyric-index="${index}" data-time-ms="${line.timeMs}">
+  lyricsLines.innerHTML = result.lines.map((line, index) => {
+    const tag = canSeek ? "button" : "div";
+    const attributes = canSeek ? `type="button" data-time-ms="${line.timeMs}"` : "aria-disabled=\"true\"";
+    return `
+    <${tag} class="lyrics-line" ${attributes} data-lyric-index="${index}">
       <span class="lyrics-line__original">${escapeXml(line.text)}</span>
       ${line.translation ? `<span class="lyrics-line__translation">${escapeXml(line.translation)}</span>` : ""}
-    </button>
-  `).join("");
+    </${tag}>
+  `;
+  }).join("");
   const sources = [result.synced ? "同步歌词" : "非同步歌词", result.source]
     .concat(result.translationSource ? [`翻译 · ${result.translationSource}`] : [])
     .filter(Boolean);
