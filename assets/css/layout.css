@@ -1,0 +1,54 @@
+/* Full-screen experience and shelf stage geometry. */
+
+.experience { position: relative; width: 100vw; height: 100vh; height: 100dvh; min-height: 540px; }
+
+.shelf {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  overflow: hidden;
+  outline: none;
+  touch-action: none;
+  cursor: grab;
+}
+.shelf.is-dragging { cursor: grabbing; }
+.shelf.is-dragging .album { transition: none; }
+
+.shelf__stage {
+  position: absolute;
+  inset: 0;
+  perspective: 1380px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+}
+
+.shelf__glow {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(78vw, 1100px);
+  height: min(62vh, 620px);
+  border-radius: 50%;
+  background: rgba(255,255,255,.78);
+  filter: blur(72px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+
+.shelf__shadow {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: calc(50% + min(18vw, 225px));
+  width: min(84vw, 1160px);
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(24,22,17,.18), rgba(24,22,17,.065) 45%, transparent 72%);
+  filter: blur(18px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: .55;
+  transition: opacity 500ms ease, transform 800ms var(--ease-out);
+}
+body.has-selection .shelf__shadow { opacity: .34; transform: translate(-50%, -35%) scale(.72); }

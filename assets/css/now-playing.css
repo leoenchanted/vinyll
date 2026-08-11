@@ -1,0 +1,42 @@
+/* Independent record layer used by full now-playing lyrics mode. */
+
+/* 顶部播放器进入歌词时使用独立唱片层，不接管或移动收藏唱片架。 */
+.now-playing-record {
+  --now-playing-offset: min(300px, 21vw);
+  position: absolute;
+  z-index: 44;
+  inset: 0;
+  perspective: 1380px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 210ms ease, visibility 0s linear 210ms;
+}
+body.now-playing-lyrics .now-playing-record {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+.now-playing-record .album {
+  top: 46%;
+  cursor: default;
+  pointer-events: none;
+  transform: translate3d(calc(-50% - var(--now-playing-offset)), calc(-50% + 18px), 300px) rotateX(0) rotateY(0) rotateZ(-.38deg) scale(.82);
+  transition: none !important;
+}
+.now-playing-record .vinyl-wrap { transition: none; }
+.now-playing-record .vinyl { animation: record-spin 18s linear infinite !important; }
+.now-playing-record .jacket__front { box-shadow: 24px 34px 34px rgba(20,19,15,.25); }
+body.now-playing-lyrics .shelf,
+body.closing-now-playing-lyrics .shelf { pointer-events: none; }
+body.now-playing-lyrics .shelf__stage .album,
+body.closing-now-playing-lyrics .shelf__stage .album {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 110ms ease, visibility 0s linear 110ms !important;
+}
+body.now-playing-lyrics .shelf__glow,
+body.closing-now-playing-lyrics .shelf__glow { opacity: .12; }

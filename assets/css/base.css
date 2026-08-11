@@ -1,0 +1,78 @@
+/* Design tokens, resets, and page-level atmosphere. */
+
+:root {
+  --paper: #f2f0e9;
+  --paper-2: #e9e6dc;
+  --ink: #151513;
+  --muted: rgba(21, 21, 19, 0.48);
+  --line: rgba(21, 21, 19, 0.14);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --cover-size: clamp(270px, min(30vw, 54vh), 430px);
+  --jacket-depth: clamp(8px, 0.65vw, 56px);
+  --theme-rgb: 50, 27, 79;
+  --theme-color: #321b4f;
+  --theme-ink: #f7f3e9;
+  --font-sans: "Poppins", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --font-display: "Bodoni 72", Didot, "Songti SC", STSong, serif;
+  --font-mono: "Poppins", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { width: 100%; min-height: 100%; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+button { border: 0; color: inherit; font: inherit; }
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 43%, rgba(255,255,255,.98) 0 9%, rgba(255,255,255,.70) 28%, transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,.22), transparent 32%, rgba(112,103,81,.055));
+}
+
+.selection-theme {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 74% 112% at 88% 49%, rgba(var(--theme-rgb), .92) 0 24%, rgba(var(--theme-rgb), .68) 45%, rgba(var(--theme-rgb), .28) 67%, transparent 87%),
+    radial-gradient(ellipse 42% 90% at 58% 51%, rgba(var(--theme-rgb), .24), transparent 76%);
+  transition: opacity 780ms var(--ease-soft), background 620ms ease;
+}
+body.has-selection .selection-theme { opacity: 1; }
+body.now-playing-lyrics .selection-theme {
+  background:
+    radial-gradient(ellipse 76% 118% at 82% 50%, rgba(var(--theme-rgb), .30), transparent 78%),
+    linear-gradient(90deg,
+      rgba(var(--theme-rgb), .36) 0%,
+      rgba(var(--theme-rgb), .52) 26%,
+      rgba(var(--theme-rgb), .76) 50%,
+      rgba(var(--theme-rgb), .91) 75%,
+      rgba(var(--theme-rgb), .98) 100%);
+}
+
+.grain {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  pointer-events: none;
+  opacity: .055;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+}

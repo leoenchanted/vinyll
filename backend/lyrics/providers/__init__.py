@@ -1,0 +1,1 @@
+"""Upstream lyrics provider adapters."""

@@ -1,0 +1,42 @@
+/* Album object positioning and interactive states. */
+
+.record-object {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.album {
+  position: absolute;
+  z-index: var(--stack, 1);
+  left: 50%;
+  top: 46%;
+  width: var(--cover-size);
+  height: var(--cover-size);
+  padding: 0;
+  background: transparent;
+  overflow: visible;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    transform 920ms var(--ease-out),
+    opacity 140ms ease-out 20ms,
+    visibility 0s linear 0s;
+}
+.album.is-muted {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition:
+    transform 500ms var(--ease-out),
+    opacity 95ms ease-out,
+    visibility 0s linear 95ms;
+}
+.album:focus-visible { outline: none; }
+.album:focus-visible .jacket { box-shadow: 0 0 0 2px rgba(20,20,18,.7); }

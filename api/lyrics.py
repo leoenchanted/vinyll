@@ -6,7 +6,7 @@ import json
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 
-from server import _lyrics_parameters, _lyrics_payload
+from backend.lyrics import lyrics_parameters, lyrics_payload
 
 
 class handler(BaseHTTPRequestHandler):
@@ -22,12 +22,12 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
-        track, artist, album, duration = _lyrics_parameters(parsed.query)
+        track, artist, album, duration = lyrics_parameters(parsed.query)
         if not track or not artist:
             return self._write_json(400, {"error": "track and artist are required"})
 
         try:
-            payload = _lyrics_payload(track, artist, album, duration)
+            payload = lyrics_payload(track, artist, album, duration)
         except Exception as error:
             print(f"[lyrics] Vercel gateway: {error}")
             return self._write_json(502, {"error": "lyrics providers unavailable"})

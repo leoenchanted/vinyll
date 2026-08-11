@@ -1,0 +1,52 @@
+/* Detail panel overrides for the full now-playing view. */
+
+body.now-playing-lyrics .album-detail {
+  top: max(90px, 10vh);
+  bottom: max(28px, 5vh);
+  gap: 13px;
+  transform: none;
+  transition: opacity 210ms ease, visibility 0s linear 0s, color 480ms ease;
+  transition-delay: 0s;
+}
+body.closing-now-playing-lyrics .album-detail {
+  visibility: hidden;
+  opacity: 0;
+  transform: none;
+  pointer-events: none;
+  transition: opacity 210ms ease, visibility 0s linear 210ms;
+}
+body.now-playing-lyrics .album-detail__eyebrow { display: none; }
+body.now-playing-lyrics .album-detail h2 {
+  font-family: var(--font-sans);
+  font-size: clamp(10px, .85vw, 13px);
+  font-weight: 550;
+  letter-spacing: .01em;
+  line-height: 1.15;
+  opacity: .58;
+}
+body.now-playing-lyrics .album-detail__track {
+  display: block;
+  margin: 4px 0 3px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-size: clamp(18px, 1.75vw, 25px);
+  font-weight: 650;
+  letter-spacing: -.035em;
+  line-height: 1.06;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.now-playing-lyrics .album-detail__title {
+  margin: 0;
+  font-size: clamp(10px, .82vw, 12px);
+  font-weight: 500;
+  letter-spacing: -.01em;
+  opacity: .48;
+}
+body.now-playing-lyrics .album-detail__meta { display: none; }
+body.now-playing-lyrics .lyrics-lines {
+  gap: clamp(12px, 2vh, 19px);
+  padding-top: 20%;
+  padding-bottom: 34%;
+}
+body.now-playing-lyrics .lyrics-line { font-size: clamp(21px, 2vw, 31px); }

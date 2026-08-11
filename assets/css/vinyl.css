@@ -1,0 +1,91 @@
+/* Vinyl disc surface, label, grooves, and active animation. */
+
+/* ========== 黑胶唱片 ========== */
+.vinyl-wrap {
+  position: absolute;
+  z-index: -2;
+  top: 4.4%;
+  right: 4%;
+  width: 91.2%;
+  aspect-ratio: 1;
+  opacity: 1;
+  transform: translate3d(3%, 0, -10px) rotateY(-2deg) scale(.965);
+  transform-style: preserve-3d;
+  transition: transform 980ms var(--ease-out);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.vinyl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 1.25%, rgba(10,10,10,.98) 1.4% 1.9%, transparent 2.05% 16.5%, rgba(3,3,3,.86) 16.7% 17.15%, transparent 17.35%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.024) 0 .55px, rgba(0,0,0,.045) .72px 1.26px, transparent 1.45px 3.4px),
+    radial-gradient(circle at 46% 42%, #242424 0, #111 42%, #080808 70%, #151515 100%);
+  box-shadow:
+    0 26px 42px rgba(0,0,0,.28),
+    0 5px 9px rgba(0,0,0,.24),
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    inset 0 0 22px rgba(255,255,255,.025);
+  transform: translateZ(2px);
+}
+.vinyl::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 50%;
+  width: 30.4%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-image: var(--cover);
+  background-position: center;
+  background-size: cover;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.09),
+    0 0 0 2px rgba(0,0,0,.2),
+    inset 0 0 14px rgba(0,0,0,.08);
+  transform: translate(-50%, -50%);
+}
+.vinyl::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 13deg, transparent 0 5deg, rgba(255,255,255,.10) 11deg, transparent 18deg 117deg, rgba(255,255,255,.038) 138deg, transparent 157deg 264deg, rgba(255,255,255,.07) 282deg, transparent 304deg),
+    radial-gradient(ellipse at 31% 20%, rgba(255,255,255,.065), transparent 26%),
+    radial-gradient(ellipse at 72% 79%, rgba(255,255,255,.025), transparent 22%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.vinyl-hole {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 50%;
+  width: 1.55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #080808;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18);
+  transform: translate(-50%, -50%) translateZ(4px);
+}
+
+.album.is-active {
+  z-index: 100;
+}
+.album.is-active .jacket__front { box-shadow: 24px 34px 34px rgba(20,19,15,.25); }
+.album.is-active .vinyl-wrap {
+  transform: translate3d(62%, 0, -8px) rotateY(-2.2deg) rotateZ(.2deg) scale(.965);
+}
+.album.is-active:hover .vinyl-wrap {
+  transform: translate3d(66%, 0, -8px) rotateY(-2.2deg) rotateZ(.2deg) scale(.965);
+}
+.album.is-active .vinyl { animation: record-spin 18s linear infinite 900ms; }
+@keyframes record-spin { to { transform: translateZ(2px) rotate(1turn); } }

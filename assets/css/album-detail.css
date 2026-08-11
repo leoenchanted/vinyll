@@ -1,0 +1,147 @@
+/* Selected album panel, metadata, and track list. */
+
+.album-detail {
+  position: absolute;
+  z-index: 46;
+  isolation: isolate;
+  top: max(112px, 13vh);
+  right: clamp(34px, 6vw, 96px);
+  bottom: max(36px, 7vh);
+  width: min(38vw, 530px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  color: var(--theme-ink);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translate3d(34px, 0, 0);
+  transition:
+    opacity 380ms ease,
+    transform 760ms var(--ease-out),
+    visibility 0s linear 760ms,
+    color 480ms ease;
+}
+body.has-selection .album-detail {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 170ms, 80ms, 0s, 0s;
+}
+.album-detail__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: .62;
+  transition: opacity 160ms ease, transform 220ms var(--ease-out);
+}
+.album-detail__close:hover { opacity: 1; transform: rotate(4deg); }
+.album-detail__close svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.album-detail__header { min-width: 0; padding-right: 52px; }
+.album-detail__eyebrow,
+.album-detail__meta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: none;
+}
+.album-detail__eyebrow { margin-bottom: 15px; opacity: .55; }
+.album-detail h2 {
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(43px, 5vw, 76px);
+  font-weight: 400;
+  letter-spacing: -.055em;
+  line-height: .88;
+  text-wrap: balance;
+  transition: font-size 520ms var(--ease-out), line-height 520ms var(--ease-out), letter-spacing 520ms var(--ease-out);
+}
+.album-detail__track { display: none; }
+.album-detail__title {
+  margin: 16px 0 9px;
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1;
+  transition: margin 420ms var(--ease-out), font-size 420ms var(--ease-out), opacity 260ms ease;
+}
+.album-detail__meta { opacity: .58; transition: opacity 220ms ease; }
+.album-detail__content {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+.tracklist {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px 34px 0;
+  overflow: auto;
+  list-style: none;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: currentColor transparent;
+  mask-image: linear-gradient(180deg, #000 0 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 86%, transparent 100%);
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 180ms ease,
+    transform 360ms var(--ease-out),
+    visibility 0s linear 0s;
+}
+.album-detail.show-lyrics .tracklist {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, -14px, 0);
+  transition-delay: 0s, 0s, 180ms;
+}
+.tracklist li { border-bottom: 1px solid color-mix(in srgb, currentColor 17%, transparent); }
+.tracklist__row {
+  width: 100%;
+  min-height: 45px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 2px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+button.tracklist__row { cursor: pointer; }
+button.tracklist__row:hover { background: rgba(255,255,255,.075); }
+.tracklist__number,
+.tracklist__duration { font-family: var(--font-mono); font-size: 8px; letter-spacing: .04em; opacity: .52; }
+.tracklist__name { overflow: hidden; font-size: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.tracklist__loading { padding: 18px 0; font-family: var(--font-sans); font-size: 10px; letter-spacing: .01em; opacity: .58; }
+
+.album-detail__copyright {
+  max-width: 100%;
+  margin: 0;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  line-height: 1.45;
+  opacity: .58;
+}
+.album-detail__copyright[hidden] { display: none; }

@@ -82,19 +82,21 @@ macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完�
 
 网易云连接暂不伪造收藏专辑；连接后保留现有唱片架内容，只同步桌面客户端当前歌曲和播放控制。
 
-相关代码：
+## 代码结构
 
-- `spotify.js`：Spotify PKCE、状态校验、令牌交换/刷新和 Web API 请求
-- `apple-music.js`：Apple MusicKit 授权、资料库和网页播放
-- `netease-music.js`：网易云本地桥接客户端
-- `music-providers.js`：三个平台的单选状态与统一入口
-- `app.js`：收藏专辑映射、拖动/滚轮/键盘浏览、选中动画
-- `styles.css`：封套 3D 几何、黑胶材质、响应式布局
-- `server.py`：本地静态服务器与歌词接口
-- `api/lyrics.py`：Vercel 上的同源歌词 Function
-- `api/apple-token.js`：在 Vercel 服务端签发短期 Apple Music Developer Token
-- `bridge/windows/Vinyll.NeteaseBridge`：Windows SMTC 网易云本地助手
-- `bridge/server.js`：macOS / Linux 的网易云 CLI 本地桥接
+项目保持无框架、无打包步骤，同时按职责拆分代码：
+
+- `assets/js/providers/`：Spotify、Apple Music、网易云适配器及平台注册
+- `assets/js/albums/`：封面生成、专辑详情、唱片架交互
+- `assets/js/playback/`：播放状态、控制与正在播放视图
+- `assets/js/lyrics/` 和 `assets/js/services/`：歌词界面、同步与请求
+- `assets/js/app/`：共享状态、事件绑定和页面启动
+- `assets/css/`：按页面基础、平台、播放器、封套、黑胶、详情、歌词和响应式样式拆分
+- `backend/lyrics/`：LRCLIB、QQ 音乐、网易云歌词源及聚合缓存
+- `api/`：Vercel 歌词和 Apple Music Token Functions
+- `bridge/`：macOS / Linux CLI 桥接及 Windows SMTC 助手
+
+完整目录说明和常见修改入口见 [`docs/architecture.md`](docs/architecture.md)。
 
 ## 部署到 Vercel
 

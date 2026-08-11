@@ -1,0 +1,224 @@
+/* Three-dimensional record jacket, spines, and folded edges. */
+
+/* 封套是一个真正闭合的浅盒子：正反封面 + 左右书脊 + 上下封口。 */
+.jacket {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/*
+ * 塑封高光不能放在整个 jacket 上使用 mix-blend-mode：这会让浏览器
+ * 先把 3D 子面压平，导致书脊完全消失。封面自己的高光已在下方处理。
+ */
+.jacket::before {
+  display: none;
+}
+
+/* 塑封拆封压痕 */
+.jacket::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 8%;
+  right: 8%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 80%,
+    transparent
+  );
+  transform: translateZ(calc(var(--jacket-depth) / 2 + 1.5px));
+  pointer-events: none;
+  z-index: 11;
+}
+
+.jacket__front,
+.jacket__back,
+.jacket__spine,
+.jacket__lip {
+  position: absolute;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.jacket__front,
+.jacket__back {
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.jacket__front {
+  z-index: 5;
+  background-image: var(--cover);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    var(--shadow-x, 12px) var(--shadow-y, 28px) var(--shadow-blur, 26px) rgba(20,19,15,var(--shadow-alpha,.25)),
+    0 2px 2px rgba(20,19,15,.08);
+  transform: translateZ(calc(var(--jacket-depth) / 2));
+}
+.jacket__front::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--mx, 72%) var(--my, 20%), rgba(255,255,255,.22), transparent 15%),
+    linear-gradient(105deg, transparent 0 18%, rgba(255,255,255,.12) 26%, transparent 35% 68%, rgba(255,255,255,.08) 76%, transparent 84%);
+  mix-blend-mode: screen;
+  opacity: .52;
+}
+.jacket__front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 1px 0 rgba(255,255,255,.34),
+    inset -1px 0 rgba(0,0,0,.10),
+    inset 0 1px rgba(255,255,255,.22),
+    inset 0 -1px rgba(0,0,0,.12);
+}
+
+.jacket__back {
+  background:
+    linear-gradient(110deg, rgba(0,0,0,.18), transparent 34%, rgba(255,255,255,.08)),
+    var(--cover);
+  background-position: center;
+  background-size: cover;
+  filter: brightness(.68) saturate(.75);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transform: rotateY(180deg) translateZ(calc(var(--jacket-depth) / 2));
+}
+
+/* 左右书脊 */
+.jacket__spine {
+  top: 0;
+  width: var(--jacket-depth);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--spine-ink);
+  background-color: var(--spine-color);
+  background-image: linear-gradient(
+    90deg,
+    rgba(0,0,0,.24),
+    rgba(255,255,255,.10) 42%,
+    rgba(0,0,0,.18)
+  );
+  box-shadow:
+    inset .5px 0 rgba(255,255,255,.24),
+    inset -.5px 0 rgba(0,0,0,.30);
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+}
+
+.jacket__spine--left {
+  left: calc(var(--jacket-depth) / -2);
+  transform: rotateY(-90deg);
+}
+
+.jacket__spine--right {
+  right: calc(var(--jacket-depth) / -2);
+  transform: rotateY(90deg);
+}
+
+.spine-copy {
+  width: 100%;
+  height: calc(100% - 34px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: clamp(5px, .7vw, 10px);
+  padding: 0;
+  color: inherit;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-shadow: 0 1px 2px rgba(0,0,0,.16);
+}
+
+.jacket__spine--left .spine-copy { transform: rotate(180deg); }
+
+.spine-title,
+.spine-artist {
+  display: block;
+  max-height: 43%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+  line-height: .82;
+  text-transform: uppercase;
+}
+
+.spine-title {
+  font-size: clamp(6px, calc(var(--jacket-depth) - 2px), 10px);
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.spine-artist {
+  opacity: .76;
+  font-size: clamp(5px, calc(var(--jacket-depth) - 3px), 8px);
+  font-weight: 500;
+  letter-spacing: .10em;
+}
+
+.spine-divider {
+  flex: 0 0 13px;
+  width: 1px;
+  height: 13px;
+  background: currentColor;
+  opacity: .48;
+}
+
+/* ========== 上下厚度面 ========== */
+.jacket__lip {
+  left: 0;
+  width: 100%;
+  height: var(--jacket-depth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  color: var(--spine-ink);
+  background-color: var(--spine-color);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(0, 0, 0, 0.2)
+  );
+  background-blend-mode: multiply;
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.jacket__lip--top {
+  top: calc(var(--jacket-depth) / -2);
+  transform: rotateX(90deg);
+}
+
+.jacket__lip--bottom {
+  bottom: calc(var(--jacket-depth) / -2);
+  transform: rotateX(-90deg);
+}
+
+.jacket__lip span {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

@@ -8,7 +8,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260810-16">
+  <!-- Styles are ordered from shared foundations to component and responsive overrides. -->
+  <link rel="stylesheet" href="assets/css/base.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/providers.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/player.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/album.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/jacket.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/vinyl.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/now-playing.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/album-info.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/album-detail.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/lyrics.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/now-playing-detail.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/controls.css?v=20260811-18">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=20260811-18">
 </head>
 <body>
   <div class="ambient"></div>
@@ -151,11 +165,25 @@
 
   <div id="notice" class="notice"></div>
 
-  <script src="spotify.js?v=20260810-16"></script>
-  <script src="apple-music.js?v=20260810-16"></script>
-  <script src="netease-music.js?v=20260811-17"></script>
-  <script src="music-providers.js?v=20260811-17"></script>
-  <script src="lyrics.js?v=20260810-16"></script>
-  <script src="app.js?v=20260811-17"></script>
+  <!-- Provider adapters expose one shared browser API before the app controllers start. -->
+  <script src="assets/js/providers/spotify.js?v=20260811-18"></script>
+  <script src="assets/js/providers/apple-music.js?v=20260811-18"></script>
+  <script src="assets/js/providers/netease-music.js?v=20260811-18"></script>
+  <script src="assets/js/providers/registry.js?v=20260811-18"></script>
+  <script src="assets/js/services/lyrics.js?v=20260811-18"></script>
+
+  <!-- App modules are classic scripts so they share the existing state without a build step. -->
+  <script src="assets/js/data/demo-albums.js?v=20260811-18"></script>
+  <script src="assets/js/app/state.js?v=20260811-18"></script>
+  <script src="assets/js/utils/format.js?v=20260811-18"></script>
+  <script src="assets/js/albums/artwork.js?v=20260811-18"></script>
+  <script src="assets/js/albums/detail.js?v=20260811-18"></script>
+  <script src="assets/js/lyrics/view.js?v=20260811-18"></script>
+  <script src="assets/js/playback/now-playing.js?v=20260811-18"></script>
+  <script src="assets/js/albums/shelf.js?v=20260811-18"></script>
+  <script src="assets/js/providers/state.js?v=20260811-18"></script>
+  <script src="assets/js/playback/controller.js?v=20260811-18"></script>
+  <script src="assets/js/providers/controller.js?v=20260811-18"></script>
+  <script src="assets/js/app/bootstrap.js?v=20260811-18"></script>
 </body>
 </html>
