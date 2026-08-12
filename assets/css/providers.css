@@ -12,6 +12,26 @@
   pointer-events: none;
 }
 .provider-controls { display: flex; gap: 8px; }
+.netease-helper {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px 0 11px;
+  border: 1px solid rgba(201,37,37,.13);
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 7px 24px rgba(26,24,18,.06), inset 0 1px rgba(255,255,255,1);
+  color: #b42222;
+  font-size: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: transform 180ms var(--ease-out), background 180ms ease;
+}
+.netease-helper:hover { transform: translateY(-1px); background: #fff; }
+.netease-helper[hidden] { display: none; }
+.netease-helper svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
 
 .icon-button {
   width: 42px;
@@ -165,6 +185,22 @@
 .provider-setup code.provider-setup__inline { display: inline; margin: 0 2px; padding: 1px 4px; overflow: visible; border-radius: 4px; white-space: nowrap; }
 .provider-setup a { color: inherit; text-underline-offset: 2px; }
 .provider-picker__privacy { margin: 12px 3px 0; color: var(--muted); font-size: 7.5px; line-height: 1.5; }
+.provider-picker.is-connected-view .provider-picker__list,
+.provider-picker.is-connected-view .provider-picker__privacy { display: none; }
+.provider-picker.is-connected-view .provider-setup { margin-top: 0; }
+.provider-setup a { display: block; margin-top: 7px; }
+.provider-setup a.provider-setup__download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  margin: 12px 0 8px;
+  border-radius: 10px;
+  background: #c92525;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
 
 /* NetEase QR login is styled like a numbered record insert, not a generic auth modal. */
 .netease-login {
@@ -350,6 +386,10 @@ body.has-netease-login { overflow: hidden; }
 @keyframes netease-sheet-in { from { opacity: 0; transform: translateY(18px) rotateX(4deg) scale(.975); } }
 @keyframes netease-scan { 0%,100% { top: 14px; opacity: .2; } 50% { top: calc(100% - 15px); opacity: .85; } }
 @keyframes netease-status-pulse { 50% { transform: scale(.65); opacity: .45; } }
+
+@media (max-width: 760px) {
+  .netease-helper { display: none; }
+}
 
 @media (max-width: 520px) {
   .netease-login { align-items: end; padding: 0; }

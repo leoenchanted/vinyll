@@ -29,9 +29,11 @@ Windows 版本通过 SMTC（Windows 系统媒体会话）直接连接网易云�
 
 Windows 助手源码位于 [`windows/Vinyll.NeteaseBridge`](windows/Vinyll.NeteaseBridge)，Release 由 GitHub Actions 从该源码自动构建。
 
-## macOS / Linux（保留原 CLI 方式）
+## macOS / Linux（现有命令行方案）
 
 非 Windows 系统继续使用网易云官方 `ncm-cli`：
+
+> 这一方案读取的是 `ncm-cli + mpv` 自身的播放状态，不会读取网易云官方 Mac 桌面客户端。收藏专辑扫码在 Mac 上可以直接使用；若希望像 Windows 一样同步官方桌面客户端，需要后续提供单独的 macOS 原生助手。
 
 1. 安装 Node.js 18 或更高版本。
 2. 安装 `mpv` 并确保终端能运行 `mpv --version`。

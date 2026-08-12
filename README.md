@@ -91,9 +91,11 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 3. 在网易云音乐桌面客户端播放歌曲。
 4. 回到网站；首次出现本地网络权限提示时选择允许。
 
+扫码成功后网站会自动展示助手下载说明；之后也可以随时点击右上角已连接的网易云图标重新打开。桌面宽度下还会显示“下载播放助手”快捷入口。
+
 线上网页仍然不能直接调用 Windows API，所以需要本地播放同步的访客必须在自己的 Windows 电脑上运行助手。助手只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`；它不读取扫码登录 Cookie，也不上传桌面播放信息。
 
-macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
+macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。它同步的是 CLI/mpv 自己的播放状态，并不读取网易云官方 Mac 桌面客户端，因此目前不能视为 Windows 原生助手的等价支持。收藏专辑扫码和曲目浏览不受影响。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
 
 ## 代码结构
 

@@ -54,7 +54,12 @@ detailClose.addEventListener("click", () => {
 
 providerButton.addEventListener("click", () => {
   if (isProviderConnected()) {
-    showNotice(`${providerName()} 已连接。`, "info", 2200);
+    if (activeProviderId() === "netease") {
+      if (providerPicker.hidden) openConnectedProviderInfo();
+      else closeProviderPicker();
+    } else {
+      showNotice(`${providerName()} 已连接。`, "info", 2200);
+    }
     return;
   }
   if (providerPicker.hidden) openProviderPicker();

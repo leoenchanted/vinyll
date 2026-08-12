@@ -14,6 +14,9 @@ async function loadMusicCollection(showSuccess = false) {
     const message = `这个 ${providerName()} 账号暂时没有收藏专辑，继续展示演示唱片。`;
     showNotice(message, "info", 6500);
   }
+  if (showSuccess && activeProviderId() === "netease") {
+    window.setTimeout(openConnectedProviderInfo, 420);
+  }
 }
 
 async function initializeMusicProvider() {
@@ -68,6 +71,9 @@ async function initializeMusicProvider() {
 }
 
 function openProviderPicker() {
+  providerPicker.classList.remove("is-connected-view");
+  providerPickerEyebrow.textContent = "Music source";
+  providerPickerTitle.textContent = "选择音乐平台";
   providerPicker.hidden = false;
   providerButton.setAttribute("aria-expanded", "true");
   providerSetup.hidden = true;
@@ -75,11 +81,26 @@ function openProviderPicker() {
   window.setTimeout(() => providerPicker.querySelector("[data-provider-choice]")?.focus(), 0);
 }
 
+function openConnectedProviderInfo() {
+  const providerId = activeProviderId();
+  if (!isProviderConnected() || providerId !== "netease") return;
+  providerPicker.classList.add("is-connected-view");
+  providerPickerEyebrow.textContent = "Local companion";
+  providerPickerTitle.textContent = "本地播放同步";
+  providerPicker.hidden = false;
+  providerButton.setAttribute("aria-expanded", "true");
+  showProviderSetup(providerId);
+  window.setTimeout(() => providerPickerClose.focus(), 0);
+}
+
 function closeProviderPicker() {
   providerPicker.hidden = true;
+  providerPicker.classList.remove("is-connected-view");
   providerButton.setAttribute("aria-expanded", "false");
   providerSetup.hidden = true;
   providerSetup.innerHTML = "";
+  providerPickerEyebrow.textContent = "Music source";
+  providerPickerTitle.textContent = "选择音乐平台";
 }
 
 function showProviderSetup(providerId) {

@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Styles are ordered from shared foundations to component and responsive overrides. -->
   <link rel="stylesheet" href="assets/css/base.css?v=20260812-1">
-  <link rel="stylesheet" href="assets/css/providers.css?v=20260812-1">
+  <link rel="stylesheet" href="assets/css/providers.css?v=20260812-2">
   <link rel="stylesheet" href="assets/css/player.css?v=20260812-1">
   <link rel="stylesheet" href="assets/css/layout.css?v=20260812-1">
   <link rel="stylesheet" href="assets/css/album.css?v=20260812-1">
@@ -65,6 +65,10 @@
     </button>
 
     <div class="provider-controls">
+      <a id="netease-helper-link" class="netease-helper" href="https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v11H5V5a2 2 0 0 1 2-2zM3 20h18M9 12c1.8-1.7 4.2-1.7 6 0M10.7 14c.8-.7 1.8-.7 2.6 0"/></svg>
+        <span>播放助手</span>
+      </a>
       <button id="provider-auth" class="icon-button provider-auth" type="button" aria-label="选择音乐平台" aria-haspopup="dialog" aria-expanded="false" data-provider="none">
         <span class="provider-auth__icon provider-auth__icon--chooser" aria-hidden="true"><i></i><i></i><i></i></span>
         <svg class="provider-icon provider-icon--spotify" viewBox="0 0 24 24" aria-hidden="true">
@@ -85,7 +89,7 @@
   <section id="provider-picker" class="provider-picker" role="dialog" aria-modal="false" aria-labelledby="provider-picker-title" hidden>
     <div class="provider-picker__heading">
       <div>
-        <p>Music source</p>
+        <p id="provider-picker-eyebrow">Music source</p>
         <h2 id="provider-picker-title">选择音乐平台</h2>
       </div>
       <button id="provider-picker-close" type="button" aria-label="关闭平台选择"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -207,21 +211,21 @@
   <script src="assets/js/providers/spotify.js?v=20260812-1"></script>
   <script src="assets/js/providers/apple-music.js?v=20260812-1"></script>
   <script src="assets/js/providers/netease-music.js?v=20260812-1"></script>
-  <script src="assets/js/providers/registry.js?v=20260812-1"></script>
+  <script src="assets/js/providers/registry.js?v=20260812-2"></script>
   <script src="assets/js/services/lyrics.js?v=20260812-1"></script>
 
   <!-- App modules are classic scripts so they share the existing state without a build step. -->
   <script src="assets/js/data/demo-albums.js?v=20260812-1"></script>
-  <script src="assets/js/app/state.js?v=20260812-1"></script>
+  <script src="assets/js/app/state.js?v=20260812-2"></script>
   <script src="assets/js/utils/format.js?v=20260812-1"></script>
   <script src="assets/js/albums/artwork.js?v=20260812-1"></script>
   <script src="assets/js/albums/detail.js?v=20260812-1"></script>
   <script src="assets/js/lyrics/view.js?v=20260812-1"></script>
   <script src="assets/js/playback/now-playing.js?v=20260812-1"></script>
   <script src="assets/js/albums/shelf.js?v=20260812-1"></script>
-  <script src="assets/js/providers/state.js?v=20260812-1"></script>
+  <script src="assets/js/providers/state.js?v=20260812-2"></script>
   <script src="assets/js/playback/controller.js?v=20260812-1"></script>
-  <script src="assets/js/providers/controller.js?v=20260812-1"></script>
-  <script src="assets/js/app/bootstrap.js?v=20260812-1"></script>
+  <script src="assets/js/providers/controller.js?v=20260812-2"></script>
+  <script src="assets/js/app/bootstrap.js?v=20260812-2"></script>
 </body>
 </html>
