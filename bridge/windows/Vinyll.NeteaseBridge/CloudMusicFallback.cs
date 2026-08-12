@@ -1,7 +1,6 @@
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace Vinyll.NeteaseBridge;
@@ -74,13 +73,7 @@ internal sealed class CloudMusicFallback
                 IsPlaying = isPlaying,
                 ProgressMs = _estimatedPositionMs,
                 Device = new PlaybackDevice { Id = "netease-cloudmusic-hotkeys", Name = "网易云音乐桌面客户端" },
-                Capabilities = new PlaybackCapabilities
-                {
-                    Pause = false,
-                    Next = true,
-                    Previous = true,
-                    Seek = false,
-                },
+                Capabilities = PlaybackCapabilities.ReadOnly,
                 Item = new PlaybackItem
                 {
                     Id = track.Id,
@@ -103,35 +96,6 @@ internal sealed class CloudMusicFallback
             Log.Write($"CloudMusic compatibility mode unavailable: {error.Message}");
             return PlaybackState.Empty(smtcSources);
         }
-    }
-
-    internal async Task<bool> ExecuteAsync(string command)
-    {
-        var processes = Process.GetProcessesByName("cloudmusic");
-        var running = processes.Length > 0;
-        foreach (var process in processes) process.Dispose();
-        if (!running || command is "seek" or "pause" or "resume") return false;
-
-        byte key;
-        switch (command)
-        {
-            case "next":
-                key = 0x27; // Right arrow
-                _lastTrackId = string.Empty;
-                _lastWasPlaying = true;
-                break;
-            case "prev":
-                key = 0x25; // Left arrow
-                _lastTrackId = string.Empty;
-                _lastWasPlaying = true;
-                break;
-            default:
-                return false;
-        }
-
-        SendCloudMusicShortcut(key);
-        await Task.Delay(350);
-        return true;
     }
 
     private static CloudMusicTrack? FindTrack(string title, string titleArtist)
@@ -219,21 +183,6 @@ internal sealed class CloudMusicFallback
         }
         return new AudioObservation(false, false);
     }
-
-    private static void SendCloudMusicShortcut(byte key)
-    {
-        // NetEase Cloud Music's default global shortcuts are Ctrl+Alt+Left/Right.
-        // This path is used only when cloudmusic.exe is running and did not publish SMTC.
-        KeybdEvent(0x11, 0, 0, UIntPtr.Zero); // Ctrl down
-        KeybdEvent(0x12, 0, 0, UIntPtr.Zero); // Alt down
-        KeybdEvent(key, 0, 0, UIntPtr.Zero);
-        KeybdEvent(key, 0, 2, UIntPtr.Zero);
-        KeybdEvent(0x12, 0, 2, UIntPtr.Zero);
-        KeybdEvent(0x11, 0, 2, UIntPtr.Zero);
-    }
-
-    [DllImport("user32.dll", EntryPoint = "keybd_event")]
-    private static extern void KeybdEvent(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
 
     private static string[] AppendCloudMusicSource(string[] sources, bool running) => running
         ? sources.Append("cloudmusic.exe").Distinct(StringComparer.OrdinalIgnoreCase).ToArray()

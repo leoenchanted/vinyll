@@ -9,3 +9,5 @@ __pycache__/
 *.p8
 **/bin/
 **/obj/
+release/
+**/.build/

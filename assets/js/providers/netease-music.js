@@ -2,8 +2,8 @@
   "use strict";
 
   const API_ROOT = "/api/netease";
-  const BRIDGE_URL = "http://127.0.0.1:17863";
-  const BRIDGE_RETRY_MS = 45_000;
+  const COMPANION_URL = "http://127.0.0.1:17863";
+  const COMPANION_RETRY_MS = 45_000;
   const LIBRARY_PAGE_SIZE = 50;
   const LIBRARY_MAX_ALBUMS = 500;
   const LIBRARY_CACHE_KEY = "vinyl.netease.library.v1";
@@ -17,9 +17,9 @@
   };
 
   let profile = null;
-  let bridgeInfo = null;
-  let bridgeAvailable = false;
-  let nextBridgeProbeAt = 0;
+  let companionInfo = null;
+  let companionAvailable = false;
+  let nextCompanionProbeAt = 0;
   let qrRunId = 0;
   let retryResolver = null;
   const albumDetails = new Map();
@@ -53,8 +53,8 @@
     return payload;
   }
 
-  async function bridgeRequest(path) {
-    const response = await fetch(`${BRIDGE_URL}${path}`, {
+  async function companionRequest(path) {
+    const response = await fetch(`${COMPANION_URL}${path}`, {
       targetAddressSpace: "loopback",
       headers: { Accept: "application/json" },
     });
@@ -224,33 +224,33 @@
     }
   }
 
-  async function probeBridge(force = false) {
-    if (!force && Date.now() < nextBridgeProbeAt) return false;
+  async function probeCompanion(force = false) {
+    if (!force && Date.now() < nextCompanionProbeAt) return false;
     try {
-      bridgeInfo = await bridgeRequest("/health");
-      bridgeAvailable = Boolean(bridgeInfo?.ready);
-      nextBridgeProbeAt = bridgeAvailable ? 0 : Date.now() + BRIDGE_RETRY_MS;
-      return bridgeAvailable;
+      companionInfo = await companionRequest("/health");
+      companionAvailable = Boolean(companionInfo?.ready);
+      nextCompanionProbeAt = companionAvailable ? 0 : Date.now() + COMPANION_RETRY_MS;
+      return companionAvailable;
     } catch (_error) {
-      bridgeInfo = null;
-      bridgeAvailable = false;
-      nextBridgeProbeAt = Date.now() + BRIDGE_RETRY_MS;
+      companionInfo = null;
+      companionAvailable = false;
+      nextCompanionProbeAt = Date.now() + COMPANION_RETRY_MS;
       return false;
     }
   }
 
   async function getPlaybackState() {
-    if (!bridgeAvailable && !await probeBridge()) return null;
+    if (!companionAvailable && !await probeCompanion()) return null;
     try {
-      const state = await bridgeRequest("/state");
+      const state = await companionRequest("/state");
       return state?.item ? {
         ...state,
         read_only: true,
         capabilities: { pause: false, next: false, previous: false, seek: false },
       } : null;
     } catch (_error) {
-      bridgeAvailable = false;
-      nextBridgeProbeAt = Date.now() + BRIDGE_RETRY_MS;
+      companionAvailable = false;
+      nextCompanionProbeAt = Date.now() + COMPANION_RETRY_MS;
       return null;
     }
   }
@@ -261,9 +261,9 @@
       await webRequest("/logout", { method: "POST", body: "{}" });
     } finally {
       profile = null;
-      bridgeInfo = null;
-      bridgeAvailable = false;
-      nextBridgeProbeAt = 0;
+      companionInfo = null;
+      companionAvailable = false;
+      nextCompanionProbeAt = 0;
       albumDetails.clear();
       window.sessionStorage.removeItem(LIBRARY_CACHE_KEY);
     }
@@ -286,10 +286,10 @@
     getLibrary,
     getAlbum,
     getPlaybackState,
-    probePlayback: () => probeBridge(true),
+    probePlayback: () => probeCompanion(true),
     needsScopeUpgrade: () => false,
     handleCallback: async () => false,
     get profile() { return profile; },
-    get bridgeInfo() { return bridgeInfo; },
+    get companionInfo() { return companionInfo; },
   };
 })();

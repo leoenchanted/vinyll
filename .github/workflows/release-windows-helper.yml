@@ -1,4 +1,4 @@
-name: Release Windows NetEase helper
+name: Release NetEase helpers
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish single-file helper
+      - name: Publish Windows helper
         shell: pwsh
         run: |
           dotnet publish bridge/windows/Vinyll.NeteaseBridge/Vinyll.NeteaseBridge.csproj `
@@ -34,9 +34,31 @@ jobs:
           name: Vinyll.NeteaseBridge-win-x64
           path: release/Vinyll.NeteaseBridge-win-x64.exe
 
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Universal macOS helper
+        run: ./scripts/build-macos-companion.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vinyll.NeteaseCompanion-macOS-universal
+          path: release/Vinyll.NeteaseCompanion-macOS-universal.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
       - name: Create GitHub release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: release/Vinyll.NeteaseBridge-win-x64.exe
+          files: release-assets/*

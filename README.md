@@ -80,22 +80,21 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 网易云入口包含两项彼此独立的能力：
 
 - **收藏唱片架：**使用网易云音乐 App 扫码登录，网页读取用户收藏的专辑、封面、歌手、发行时间和完整曲目列表。点击曲目不会在网页播放。
-- **Windows 本地播放同步（可选）：**本地助手只读网易云桌面客户端当前歌曲、封面、进度和播放状态，Vinyll 据此展示当前黑胶和同步歌词。暂停、切歌和拖动进度始终在网易云 App 内完成。
+- **Windows / macOS 本地播放同步（可选）：**原生助手只读网易云桌面客户端当前歌曲、封面、进度和播放状态，Vinyll 据此展示当前黑胶和同步歌词。暂停、切歌和拖动进度始终在网易云 App 内完成。
 
 收藏唱片架部署在 Vercel Functions 上，使用 `@neteasecloudmusicapienhanced/api` 访问对应的只读接口。登录 Cookie 仅保存在同源、`HttpOnly`、`SameSite=Lax` 的浏览器会话 Cookie 中，不写入 `localStorage`，前端也无法读取；项目不接触用户密码。请求按页读取、主动限速，并在当前标签页缓存收藏元数据 10 分钟，以减少重复请求和触发风控的概率。
 
-需要当前歌曲和歌词的 Windows 用户再安装本地助手即可；只浏览收藏专辑不需要助手：
+需要当前歌曲和歌词的用户再安装对应系统的本地助手即可；只浏览收藏专辑不需要助手：
 
-1. 从 [GitHub Releases](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe) 下载 Windows 助手。
-2. 双击一次完成当前用户安装并启动。
-3. 在网易云音乐桌面客户端播放歌曲。
-4. 回到网站；首次出现本地网络权限提示时选择允许。
+- Windows：[下载 Windows x64 助手](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe)，双击完成当前用户安装并启动。
+- macOS：[下载 Universal 助手](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseCompanion-macOS-universal.zip)，解压后拖入“应用程序”，首次启动右键选择“打开”。支持 macOS 15.4 及以上的 Apple Silicon 与 Intel Mac。
+- 打开网易云音乐桌面客户端并播放歌曲，再回到网站；浏览器首次询问本地网络访问时选择允许。
 
 扫码成功后网站会自动展示助手下载说明；之后也可以随时点击右上角已连接的网易云图标重新打开。桌面宽度下还会显示“下载播放助手”快捷入口。
 
-线上网页仍然不能直接调用 Windows API，所以需要本地播放同步的访客必须在自己的 Windows 电脑上运行助手。助手只监听 `127.0.0.1:17863`，默认只接受本地网页和 `https://vinyll.leoenchanted.top`；它不读取扫码登录 Cookie，也不上传桌面播放信息。
+线上网页不能直接调用桌面系统媒体 API，所以需要本地播放同步的访客必须在自己的电脑上运行助手。助手只监听 `127.0.0.1:17863`，只提供 `/health` 与 `/state` 两个 GET 接口，默认只接受本地网页和 `https://vinyll.leoenchanted.top`；它不读取扫码登录 Cookie，也不上传桌面播放信息。
 
-macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。它同步的是 CLI/mpv 自己的播放状态，并不读取网易云官方 Mac 桌面客户端，因此目前不能视为 Windows 原生助手的等价支持。收藏专辑扫码和曲目浏览不受影响。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
+macOS 助手读取网易云官方 Mac 客户端发布到系统“正在播放”中心的信息，不需要 Node.js、mpv、ncm-cli 或开放平台 App ID。它使用 macOS 的 MediaRemote 系统能力，系统大版本升级后可能需要跟随适配。Linux 暂不提供当前播放助手，但收藏专辑扫码和曲目浏览不受影响。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
 
 ## 代码结构
 
@@ -110,7 +109,7 @@ macOS / Linux 暂时保留 `ncm-cli + mpv + node bridge/server.js` 方式。它�
 - `backend/lyrics/`：LRCLIB、QQ 音乐、网易云歌词源及聚合缓存
 - `backend/netease/`：网易云会话安全、数据归一化与上游错误处理
 - `api/`：Vercel 歌词、Apple Music Token 和网易云 Functions
-- `bridge/`：macOS / Linux CLI 桥接及 Windows SMTC 助手
+- `bridge/`：Windows SMTC 与 macOS MediaRemote 原生助手
 
 完整目录说明和常见修改入口见 [`docs/architecture.md`](docs/architecture.md)。
 

@@ -98,7 +98,7 @@ internal sealed class BridgeHttpServer : IDisposable
             {
                 ok = true,
                 ready = true,
-                mode = "smtc",
+                mode = "smtc-readonly",
                 platform = "win32",
                 version = Program.CurrentVersion,
                 sessionFound,
@@ -114,37 +114,6 @@ internal sealed class BridgeHttpServer : IDisposable
                 ? "Vinyll 网易云助手 · 等待播放"
                 : $"网易云 · {state.Item.Name}");
             await WriteJsonAsync(stream, 200, state, origin);
-            return;
-        }
-
-        if (request.Method == "GET" && request.Path == "/library")
-        {
-            await WriteJsonAsync(stream, 200, new
-            {
-                profile = new { displayName = "网易云桌面端" },
-                items = Array.Empty<object>(),
-                total = 0,
-            }, origin);
-            return;
-        }
-
-        if (request.Method == "POST" && request.Path == "/command")
-        {
-            using var body = JsonDocument.Parse(string.IsNullOrWhiteSpace(request.Body) ? "{}" : request.Body);
-            var command = body.RootElement.TryGetProperty("command", out var commandNode)
-                ? commandNode.GetString() ?? string.Empty
-                : string.Empty;
-            var positionMs = body.RootElement.TryGetProperty("positionMs", out var positionNode)
-                && positionNode.TryGetInt64(out var parsedPosition) ? parsedPosition : 0;
-            if (command is not ("pause" or "resume" or "next" or "prev" or "seek"))
-            {
-                await WriteJsonAsync(stream, 400, new { error = "Unsupported playback command" }, origin);
-                return;
-            }
-
-            var succeeded = await _smtc.ExecuteAsync(command, positionMs);
-            await WriteJsonAsync(stream, succeeded ? 200 : 409,
-                succeeded ? new { ok = true } : new { error = "网易云没有接受播放命令" }, origin);
             return;
         }
 
@@ -224,7 +193,7 @@ internal sealed class BridgeHttpServer : IDisposable
             .Append("Cache-Control: no-store\r\n")
             .Append("Connection: close\r\n")
             .Append("Vary: Origin\r\n")
-            .Append("Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n")
+            .Append("Access-Control-Allow-Methods: GET, OPTIONS\r\n")
             .Append("Access-Control-Allow-Headers: Content-Type\r\n")
             .Append("Access-Control-Allow-Private-Network: true\r\n");
         if (!string.IsNullOrWhiteSpace(origin)) headers.Append($"Access-Control-Allow-Origin: {origin}\r\n");

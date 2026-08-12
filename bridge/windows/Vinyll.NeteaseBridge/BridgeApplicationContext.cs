@@ -60,7 +60,7 @@ internal sealed class BridgeApplicationContext : ApplicationContext
             Log.Write(error);
             SetStatus("启动失败：端口 17863 被占用");
             _notifyIcon.ShowBalloonTip(8000, Program.ProductName,
-                "无法启动：端口 17863 被占用。请先关闭旧版 node bridge/server.js，再重新打开助手。",
+                "无法启动：端口 17863 被占用。请先退出正在运行的旧版 Vinyll 助手，再重新打开。",
                 ToolTipIcon.Error);
         }
     }

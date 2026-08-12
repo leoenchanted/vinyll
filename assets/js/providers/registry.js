@@ -81,10 +81,16 @@
       }
       if (os === "macos") {
         return `
-          <strong>收藏唱片架已经可以使用</strong>
-          <p>扫码登录和收藏专辑在 Mac 上与 Windows 一样可用，不需要安装助手。</p>
-          <p><b>当前歌曲同步仍是开发者方案：</b>现有桥接读取的是 <code class="provider-setup__inline">ncm-cli + mpv</code> 的播放状态，不是网易云官方 Mac 客户端，因此还不能当作 Windows 原生助手的等价功能。</p>
-          <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge#macos--linux%E7%8E%B0%E6%9C%89%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%96%B9%E6%A1%88" target="_blank" rel="noreferrer">查看 Mac 现有同步步骤 ↗</a>
+          <strong>Mac 原生播放同步</strong>
+          <p>扫码登录只用于载入收藏专辑和曲目。Mac 助手只读取网易云官方桌面客户端发布到系统的当前歌曲、封面和进度，用来显示黑胶与同步歌词。</p>
+          <ol>
+            <li>下载并解压 Universal 助手，把 App 拖入“应用程序”。</li>
+            <li>首次启动请右键 App 选择“打开”，然后在网易云音乐中播放歌曲。</li>
+            <li>回到本站；浏览器询问时允许访问本地网络。暂停、切歌和拖动进度仍在网易云音乐 App 内完成。</li>
+          </ol>
+          <p>支持 macOS 15.4 及以上，Apple Silicon 与 Intel Mac。</p>
+          <a class="provider-setup__download" href="https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseCompanion-macOS-universal.zip">下载 macOS Universal 助手 ↓</a>
+          <a href="https://github.com/leoenchanted/vinyll/tree/main/bridge#macos" target="_blank" rel="noreferrer">查看安装与排错说明 ↗</a>
         `;
       }
       return `

@@ -26,14 +26,21 @@ function setNeteaseHelperLink(connected, providerId) {
   const visible = connected && providerId === "netease";
   neteaseHelperLink.hidden = !visible;
   if (!visible) return;
-  const windows = window.musicProviders.platform() === "windows";
-  neteaseHelperLink.href = windows
+  const platform = window.musicProviders.platform();
+  const directDownload = platform === "windows" || platform === "macos";
+  neteaseHelperLink.href = platform === "windows"
     ? "https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseBridge-win-x64.exe"
-    : "https://github.com/leoenchanted/vinyll/tree/main/bridge#macos--linux%E7%8E%B0%E6%9C%89%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%96%B9%E6%A1%88";
-  neteaseHelperLink.target = windows ? "" : "_blank";
-  neteaseHelperLink.rel = windows ? "" : "noreferrer";
-  neteaseHelperLink.querySelector("span").textContent = windows ? "下载播放助手" : "Mac 同步说明";
-  neteaseHelperLink.setAttribute("aria-label", windows ? "下载 Windows 网易云播放助手" : "查看 Mac 网易云播放同步说明");
+    : platform === "macos"
+      ? "https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseCompanion-macOS-universal.zip"
+      : "https://github.com/leoenchanted/vinyll/tree/main/bridge#linux";
+  neteaseHelperLink.target = directDownload ? "" : "_blank";
+  neteaseHelperLink.rel = directDownload ? "" : "noreferrer";
+  neteaseHelperLink.querySelector("span").textContent = platform === "windows"
+    ? "下载 Windows 助手"
+    : platform === "macos" ? "下载 Mac 助手" : "系统支持说明";
+  neteaseHelperLink.setAttribute("aria-label", platform === "windows"
+    ? "下载 Windows 网易云播放助手"
+    : platform === "macos" ? "下载 macOS 网易云播放助手" : "查看网易云播放助手系统支持说明");
 }
 
 function setProviderButton(state, profile = null, providerId = activeProviderId()) {

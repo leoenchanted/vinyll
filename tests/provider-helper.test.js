@@ -78,16 +78,16 @@ function providerSetup(platform) {
 test("shows a direct Windows helper download whenever NetEase is connected", () => {
   const state = providerState("windows");
   assert.equal(state.neteaseHelperLink.hidden, false);
-  assert.equal(state.helperLabel.textContent, "下载播放助手");
+  assert.equal(state.helperLabel.textContent, "下载 Windows 助手");
   assert.match(state.neteaseHelperLink.href, /Vinyll\.NeteaseBridge-win-x64\.exe$/);
 });
 
-test("routes Mac users to honest setup instructions instead of the Windows binary", () => {
+test("shows a direct Universal helper download to Mac users", () => {
   const state = providerState("macos");
   assert.equal(state.neteaseHelperLink.hidden, false);
-  assert.equal(state.helperLabel.textContent, "Mac 同步说明");
-  assert.match(state.neteaseHelperLink.href, /bridge#macos/);
-  assert.equal(state.neteaseHelperLink.target, "_blank");
+  assert.equal(state.helperLabel.textContent, "下载 Mac 助手");
+  assert.match(state.neteaseHelperLink.href, /Vinyll\.NeteaseCompanion-macOS-universal\.zip$/);
+  assert.equal(state.neteaseHelperLink.target, "");
 });
 
 test("keeps the Windows download in the connected setup panel", () => {
@@ -96,8 +96,10 @@ test("keeps the Windows download in the connected setup panel", () => {
   assert.match(setup, /Vinyll\.NeteaseBridge-win-x64\.exe/);
 });
 
-test("does not claim the current Mac CLI bridge reads the official desktop app", () => {
+test("offers the native Mac helper for the official desktop app", () => {
   const setup = providerSetup("MacIntel");
-  assert.match(setup, /不是网易云官方 Mac 客户端/);
+  assert.match(setup, /下载 macOS Universal 助手/);
+  assert.match(setup, /网易云官方桌面客户端/);
+  assert.doesNotMatch(setup, /ncm-cli|mpv/);
   assert.doesNotMatch(setup, /Vinyll\.NeteaseBridge-win-x64\.exe/);
 });

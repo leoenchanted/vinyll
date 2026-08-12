@@ -44,7 +44,7 @@ internal sealed class SmtcService
                 IsPlaying = playback.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing,
                 ProgressMs = (long)position,
                 Device = new PlaybackDevice { Id = "netease-smtc", Name = "网易云音乐桌面客户端" },
-                Capabilities = PlaybackCapabilities.Full,
+                Capabilities = PlaybackCapabilities.ReadOnly,
                 Item = new PlaybackItem
                 {
                     Id = itemId,
@@ -61,30 +61,6 @@ internal sealed class SmtcService
                 },
                 SourceAppId = session.SourceAppUserModelId,
                 AvailableSources = sources,
-            };
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    internal async Task<bool> ExecuteAsync(string command, long positionMs = 0)
-    {
-        await _gate.WaitAsync();
-        try
-        {
-            var (session, _) = await FindSessionAsync();
-            if (session is null) return await _cloudMusic.ExecuteAsync(command);
-
-            return command switch
-            {
-                "pause" => await session.TryPauseAsync(),
-                "resume" => await session.TryPlayAsync(),
-                "next" => await session.TrySkipNextAsync(),
-                "prev" => await session.TrySkipPreviousAsync(),
-                "seek" => await session.TryChangePlaybackPositionAsync(TimeSpan.FromMilliseconds(Math.Max(0, positionMs)).Ticks),
-                _ => false,
             };
         }
         finally
@@ -200,13 +176,7 @@ internal sealed class PlaybackCapabilities
     public bool Previous { get; init; }
     public bool Seek { get; init; }
 
-    internal static PlaybackCapabilities Full { get; } = new()
-    {
-        Pause = true,
-        Next = true,
-        Previous = true,
-        Seek = true,
-    };
+    internal static PlaybackCapabilities ReadOnly { get; } = new();
 }
 internal sealed class NamedItem { public required string Name { get; init; } }
 internal sealed class ImageItem { public required string Url { get; init; } }
