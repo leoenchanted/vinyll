@@ -1,4 +1,3 @@
-import AppKit
 import Foundation
 
 struct MediaRemoteStatus {
@@ -33,6 +32,7 @@ struct NowPlayingSnapshot {
             "is_playing": isPlaying,
             "progress_ms": progressMs,
             "device": ["id": "netease-macos", "name": "网易云音乐 · Mac"],
+            "capabilities": ["pause": false, "next": false, "previous": false, "seek": false],
             "item": [
                 "id": id,
                 "uri": NSNull(),
@@ -44,53 +44,37 @@ struct NowPlayingSnapshot {
         ]
     }
 }
+
+private struct SystemNowPlaying: Decodable {
+    let supported: Bool
+    let displayName: String?
+    let bundleIdentifier: String?
+    let title: String?
+    let artist: String?
+    let album: String?
+    let duration: Double?
+    let elapsedTime: Double?
+    let timestamp: Double?
+    let playbackRate: Double?
+    let uniqueIdentifier: String?
+    let artworkMimeType: String?
+    let artworkData: String?
+    let error: String?
+}
+
 final class MediaRemoteReader {
     static let shared = MediaRemoteReader()
 
-    private let requestClass: NSObject.Type?
+    private let lock = NSLock()
     private let neteaseMarkers = ["网易云", "netease", "163music", "cloudmusic", "orpheus"]
+    private var cachedAt = Date.distantPast
+    private var cachedStatus = MediaRemoteStatus(supported: true, isNetease: false, appName: "", snapshot: nil)
 
-    private init() {
-        let framework = Bundle(path: "/System/Library/PrivateFrameworks/MediaRemote.framework/")
-        _ = framework?.load()
-        requestClass = NSClassFromString("MRNowPlayingRequest") as? NSObject.Type
-    }
+    private init() {}
 
-    private func classObject(_ selectorName: String) -> NSObject? {
-        guard let requestClass else { return nil }
-        let selector = NSSelectorFromString(selectorName)
-        guard requestClass.responds(to: selector) else { return nil }
-        return requestClass.perform(selector)?.takeUnretainedValue() as? NSObject
-    }
-
-    private func object(_ receiver: NSObject?, _ selectorName: String) -> NSObject? {
-        guard let receiver else { return nil }
-        let selector = NSSelectorFromString(selectorName)
-        guard receiver.responds(to: selector) else { return nil }
-        return receiver.perform(selector)?.takeUnretainedValue() as? NSObject
-    }
-
-    private func string(_ dictionary: NSDictionary, _ key: String) -> String {
-        if let value = dictionary.object(forKey: key) as? String { return value }
-        if let value = dictionary.object(forKey: key) as? NSString { return value as String }
-        return ""
-    }
-
-    private func number(_ dictionary: NSDictionary, _ key: String) -> Double {
-        (dictionary.object(forKey: key) as? NSNumber)?.doubleValue ?? 0
-    }
-
-    private func clientIdentity() -> (name: String, bundleIdentifier: String) {
-        let playerPath = classObject("localNowPlayingPlayerPath")
-        let client = object(playerPath, "client")
-        let name = object(client, "displayName") as? String ?? ""
-        let bundleIdentifier = object(client, "bundleIdentifier") as? String ?? ""
-        return (name, bundleIdentifier)
-    }
-
-    private func isNeteaseIdentity(_ identity: (name: String, bundleIdentifier: String)) -> Bool {
-        let value = "\(identity.name) \(identity.bundleIdentifier)".lowercased()
-        return neteaseMarkers.contains { value.contains($0) }
+    private func isNetease(name: String, bundleIdentifier: String) -> Bool {
+        let identity = "\(name) \(bundleIdentifier)".lowercased()
+        return neteaseMarkers.contains { identity.contains($0) }
     }
 
     private func stableID(title: String, artist: String, album: String, uniqueIdentifier: String) -> String {
@@ -98,54 +82,80 @@ final class MediaRemoteReader {
         return "netease-macos:\(title)|\(artist)|\(album)"
     }
 
-    func read() -> MediaRemoteStatus {
-        guard requestClass != nil else {
+    private func readSystemNowPlaying() -> SystemNowPlaying? {
+        guard let scriptURL = Bundle.main.url(forResource: "now-playing", withExtension: "js") else {
+            CompanionLog.write("Now Playing reader resource is missing")
+            return nil
+        }
+
+        let output = Pipe()
+        let errors = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-l", "JavaScript", scriptURL.path]
+        process.standardOutput = output
+        process.standardError = errors
+
+        do {
+            try process.run()
+            let data = output.fileHandleForReading.readDataToEndOfFile()
+            let errorData = errors.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else {
+                let message = String(data: errorData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+                CompanionLog.write("Now Playing reader exited with \(process.terminationStatus): \(message ?? "unknown error")")
+                return nil
+            }
+            return try JSONDecoder().decode(SystemNowPlaying.self, from: data)
+        } catch {
+            CompanionLog.write("Now Playing reader failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    private func freshStatus() -> MediaRemoteStatus {
+        guard let system = readSystemNowPlaying() else {
             return MediaRemoteStatus(supported: false, isNetease: false, appName: "", snapshot: nil)
         }
-
-        let identity = clientIdentity()
-        let isNetease = isNeteaseIdentity(identity)
-        guard isNetease else {
-            return MediaRemoteStatus(supported: true, isNetease: false, appName: identity.name, snapshot: nil)
+        if let error = system.error, !error.isEmpty {
+            CompanionLog.write("Now Playing script reported: \(error)")
         }
 
-        guard
-            let item = classObject("localNowPlayingItem"),
-            let info = object(item, "nowPlayingInfo") as? NSDictionary
-        else {
-            return MediaRemoteStatus(supported: true, isNetease: true, appName: identity.name, snapshot: nil)
+        let appName = system.displayName ?? ""
+        let bundleIdentifier = system.bundleIdentifier ?? ""
+        let netease = isNetease(name: appName, bundleIdentifier: bundleIdentifier)
+        guard netease else {
+            return MediaRemoteStatus(supported: system.supported, isNetease: false, appName: appName, snapshot: nil)
         }
 
-        let title = string(info, "kMRMediaRemoteNowPlayingInfoTitle")
+        let title = system.title ?? ""
         guard !title.isEmpty else {
-            return MediaRemoteStatus(supported: true, isNetease: true, appName: identity.name, snapshot: nil)
+            return MediaRemoteStatus(supported: system.supported, isNetease: true, appName: appName, snapshot: nil)
         }
 
-        let artist = string(info, "kMRMediaRemoteNowPlayingInfoArtist").isEmpty
-            ? "网易云音乐"
-            : string(info, "kMRMediaRemoteNowPlayingInfoArtist")
-        let album = string(info, "kMRMediaRemoteNowPlayingInfoAlbum").isEmpty
-            ? "网易云音乐"
-            : string(info, "kMRMediaRemoteNowPlayingInfoAlbum")
-        let duration = max(0, number(info, "kMRMediaRemoteNowPlayingInfoDuration"))
-        let playbackRate = number(info, "kMRMediaRemoteNowPlayingInfoPlaybackRate")
-        var elapsed = max(0, number(info, "kMRMediaRemoteNowPlayingInfoElapsedTime"))
-        if playbackRate > 0, let timestamp = info.object(forKey: "kMRMediaRemoteNowPlayingInfoTimestamp") as? Date {
-            elapsed += max(0, Date().timeIntervalSince(timestamp)) * playbackRate
+        let artist = (system.artist?.isEmpty == false ? system.artist : nil) ?? "网易云音乐"
+        let album = (system.album?.isEmpty == false ? system.album : nil) ?? "网易云音乐"
+        let duration = max(0, system.duration ?? 0)
+        let playbackRate = system.playbackRate ?? 0
+        var elapsed = max(0, system.elapsedTime ?? 0)
+        if playbackRate > 0, let timestamp = system.timestamp, timestamp > 0 {
+            elapsed += max(0, Date().timeIntervalSince1970 - timestamp) * playbackRate
         }
         if duration > 0 { elapsed = min(duration, elapsed) }
 
         var artworkDataURL: String?
-        if let artwork = info.object(forKey: "kMRMediaRemoteNowPlayingInfoArtworkData") as? Data,
-           !artwork.isEmpty,
-           artwork.count <= 8_000_000 {
-            let mime = string(info, "kMRMediaRemoteNowPlayingInfoArtworkMIMEType")
-            artworkDataURL = "data:\(mime.isEmpty ? "image/jpeg" : mime);base64,\(artwork.base64EncodedString())"
+        if let artwork = system.artworkData, !artwork.isEmpty {
+            let mime = (system.artworkMimeType?.isEmpty == false ? system.artworkMimeType : nil) ?? "image/jpeg"
+            artworkDataURL = "data:\(mime);base64,\(artwork)"
         }
 
-        let uniqueIdentifier = string(info, "kMRMediaRemoteNowPlayingInfoUniqueIdentifier")
         let snapshot = NowPlayingSnapshot(
-            id: stableID(title: title, artist: artist, album: album, uniqueIdentifier: uniqueIdentifier),
+            id: stableID(
+                title: title,
+                artist: artist,
+                album: album,
+                uniqueIdentifier: system.uniqueIdentifier ?? ""
+            ),
             title: title,
             artist: artist,
             album: album,
@@ -154,7 +164,16 @@ final class MediaRemoteReader {
             isPlaying: playbackRate > 0,
             artworkDataURL: artworkDataURL
         )
-        return MediaRemoteStatus(supported: true, isNetease: true, appName: identity.name, snapshot: snapshot)
+        return MediaRemoteStatus(supported: system.supported, isNetease: true, appName: appName, snapshot: snapshot)
+    }
+
+    func read() -> MediaRemoteStatus {
+        lock.lock()
+        defer { lock.unlock() }
+        if Date().timeIntervalSince(cachedAt) < 0.75 { return cachedStatus }
+        cachedStatus = freshStatus()
+        cachedAt = Date()
+        return cachedStatus
     }
 
     func healthPayload() -> [String: Any] {
@@ -172,7 +191,7 @@ final class MediaRemoteReader {
         return [
             "ok": true,
             "ready": status.supported,
-            "mode": "mediaremote-readonly",
+            "mode": "system-script-readonly",
             "platform": "darwin",
             "version": CompanionInfo.version,
             "sessionFound": status.isNetease,

@@ -17,7 +17,7 @@ Windows 助手通过 SMTC（Windows 系统媒体会话）读取网易云音乐�
 
 ## macOS
 
-macOS 助手是单独的原生菜单栏 App。它读取网易云官方 Mac 客户端发布到 macOS 系统“正在播放”中心的歌曲、歌手、专辑、封面、时长、进度和播放状态，不控制网易云客户端，也不需要 Node.js、mpv、ncm-cli 或开放平台 App ID。
+macOS 助手是单独的原生菜单栏 App。它读取网易云官方 Mac 客户端发布到 macOS 系统“正在播放”中心的歌曲、歌手、专辑、封面、时长、进度和播放状态，不控制网易云客户端，也不需要 Node.js、mpv、ncm-cli 或开放平台 App ID。为兼容 macOS 15.4 及以上对普通 App 的 MediaRemote 限制，助手使用系统自带的 `/usr/bin/osascript` 执行随 App 打包的只读脚本；用户不需要另装或配置任何组件。
 
 1. [下载 macOS Universal 助手](https://github.com/leoenchanted/vinyll/releases/latest/download/Vinyll.NeteaseCompanion-macOS-universal.zip)。
 2. 解压后把 `Vinyll 网易云助手.app` 拖入“应用程序”。
@@ -27,7 +27,7 @@ macOS 助手是单独的原生菜单栏 App。它读取网易云官方 Mac 客�
 
 支持 macOS 15.4 及以上，安装包同时包含 Apple Silicon 与 Intel 架构。助手运行后出现在菜单栏，可打开网站、开关登录时启动、查看日志或退出；日志位于 `~/Library/Logs/Vinyll/netease-companion.log`。源码位于 [`macos/Vinyll.NeteaseCompanion`](macos/Vinyll.NeteaseCompanion)。
 
-macOS 当前播放读取依赖系统的 MediaRemote 能力。它不绕过网易云登录或音乐版权限制，但该系统接口不是面向第三方稳定公开的 API，因此未来 macOS 大版本升级后可能需要更新助手。
+macOS 当前播放读取依赖系统的 MediaRemote 能力和系统自带脚本运行器。它不绕过网易云登录或音乐版权限制，但 MediaRemote 不是面向第三方稳定公开的 API，因此未来 macOS 大版本升级后可能需要更新助手。
 
 ## Linux
 

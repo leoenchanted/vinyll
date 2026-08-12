@@ -94,7 +94,7 @@ Apple Music 用户需要有效订阅才能访问个人资料库和完整播放�
 
 线上网页不能直接调用桌面系统媒体 API，所以需要本地播放同步的访客必须在自己的电脑上运行助手。助手只监听 `127.0.0.1:17863`，只提供 `/health` 与 `/state` 两个 GET 接口，默认只接受本地网页和 `https://vinyll.leoenchanted.top`；它不读取扫码登录 Cookie，也不上传桌面播放信息。
 
-macOS 助手读取网易云官方 Mac 客户端发布到系统“正在播放”中心的信息，不需要 Node.js、mpv、ncm-cli 或开放平台 App ID。它使用 macOS 的 MediaRemote 系统能力，系统大版本升级后可能需要跟随适配。Linux 暂不提供当前播放助手，但收藏专辑扫码和曲目浏览不受影响。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
+macOS 助手读取网易云官方 Mac 客户端发布到系统“正在播放”中心的信息，不需要 Node.js、mpv、ncm-cli 或开放平台 App ID。macOS 15.4 及以上会限制普通 App 直接读取 MediaRemote，因此助手通过系统自带的 `/usr/bin/osascript` 执行内置只读脚本，再将结果留在本机接口中；不需要用户安装或配置任何额外组件。系统大版本升级后可能需要跟随适配。Linux 暂不提供当前播放助手，但收藏专辑扫码和曲目浏览不受影响。完整安装、隐私和排错说明见 [`bridge/README.md`](bridge/README.md)。
 
 ## 代码结构
 
@@ -109,7 +109,7 @@ macOS 助手读取网易云官方 Mac 客户端发布到系统“正在播放”
 - `backend/lyrics/`：LRCLIB、QQ 音乐、网易云歌词源及聚合缓存
 - `backend/netease/`：网易云会话安全、数据归一化与上游错误处理
 - `api/`：Vercel 歌词、Apple Music Token 和网易云 Functions
-- `bridge/`：Windows SMTC 与 macOS MediaRemote 原生助手
+- `bridge/`：Windows SMTC 与 macOS 系统“正在播放”原生助手
 
 完整目录说明和常见修改入口见 [`docs/architecture.md`](docs/architecture.md)。
 

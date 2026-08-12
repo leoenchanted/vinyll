@@ -3,7 +3,7 @@ import Foundation
 import ServiceManagement
 
 enum CompanionInfo {
-    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1.0"
+    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1.1"
     static let website = URL(string: "https://vinyll.leoenchanted.top")!
 }
 

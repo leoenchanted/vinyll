@@ -37,7 +37,7 @@ backend/lyrics/
 backend/netease/             # 网易云会话、数据归一化和上游错误处理
 
 api/                        # Vercel Functions（歌词、Apple Token、网易云）
-bridge/                     # 网易云 Windows / macOS 原生播放助手
+bridge/                     # 网易云 Windows / macOS 本地只读播放助手
 index.html                  # 页面结构与前端资源载入顺序
 server.py                   # 本地静态服务器入口
 ```

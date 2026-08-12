@@ -9,7 +9,7 @@ OUTPUT_ZIP="$PROJECT_ROOT/release/Vinyll.NeteaseCompanion-macOS-universal.zip"
 MODULE_CACHE="$BUILD_ROOT/module-cache"
 
 rm -rf "$BUILD_ROOT" "$APP_ROOT" "$OUTPUT_ZIP"
-mkdir -p "$BUILD_ROOT" "$MODULE_CACHE" "$APP_ROOT/Contents/MacOS"
+mkdir -p "$BUILD_ROOT" "$MODULE_CACHE" "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources"
 
 SOURCES=("$SOURCE_ROOT"/Sources/*.swift)
 COMMON=(
@@ -23,6 +23,7 @@ swiftc "${COMMON[@]}" -target arm64-apple-macosx15.4 "${SOURCES[@]}" -o "$BUILD_
 swiftc "${COMMON[@]}" -target x86_64-apple-macosx15.4 "${SOURCES[@]}" -o "$BUILD_ROOT/companion-x86_64"
 lipo -create "$BUILD_ROOT/companion-arm64" "$BUILD_ROOT/companion-x86_64" -output "$APP_ROOT/Contents/MacOS/VinyllNeteaseCompanion"
 cp "$SOURCE_ROOT/Resources/Info.plist" "$APP_ROOT/Contents/Info.plist"
+cp "$SOURCE_ROOT/Resources/now-playing.js" "$APP_ROOT/Contents/Resources/now-playing.js"
 codesign --force --deep --sign - "$APP_ROOT"
 ditto -c -k --sequesterRsrc --keepParent "$APP_ROOT" "$OUTPUT_ZIP"
 
